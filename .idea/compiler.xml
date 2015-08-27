@@ -22,10 +22,12 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="true" />
+        <module name="MaraudersApp-WebServer" />
         <module name="MaraudersMap-WebServer" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="MaraudersApp-WebServer" target="1.5" />
       <module name="MaraudersMap-WebServer" target="1.5" />
     </bytecodeTargetLevel>
   </component>
