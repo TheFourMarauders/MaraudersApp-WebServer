@@ -5,4 +5,6 @@ package storage;
  */
 public interface StorageService {
     byte[] getHashedPassword(String username);
+
+    boolean createUser(String username, String hashedPassword, String firstName, String lastName);
 }
