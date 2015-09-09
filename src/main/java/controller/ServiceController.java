@@ -5,7 +5,6 @@ import authentication.HttpBasicAuthService;
 import storage.MongoDBStorageService;
 import storage.StorageService;
 
-import javax.xml.ws.Service;
 
 /**
  * Created by Matthew on 9/7/2015.

@@ -35,21 +35,20 @@ public class WebServer
             //create user
         });
 
-        put("/api/services/send-friend-request/:username", (req, res) -> {
+        put("/api/services/user/:username/send-friend-request/:targetusername", (req, res) -> {
             //add friend request to target user specified in json
         });
 
-        get("/api/services/:username/incoming-friend-requests", (req, res) -> {
+        get("/api/services/user/:username/incoming-friend-requests", (req, res) -> {
 
         });
 
-        put("/api/services/:username/accept-friend/:targetfriend", (req, res) -> {
+        put("/api/services/user/:username/accept-friend/:targetfriend", (req, res) -> {
 
         });
-        delete("/api/services/:username/delete-friend/:targetfriend", (req, res) -> {
+        delete("/api/services/user/:username/delete-friend/:targetfriend", (req, res) -> {
 
         });
-
 
 
     }
