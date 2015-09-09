@@ -1,5 +1,9 @@
 package storage.mongostoragemodel;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,14 +15,26 @@ public class User {
     private String hashedPassword;
     private String firstName;
     private String lastName;
+
+    @JsonProperty("friends")
     private List<User> friends;
 
-    public User(String _id, String hashedPassword, String firstName, String lastName) {
+    @JsonProperty("friendRequest")
+    private List<FriendRequest> friendRequests;
+
+    @JsonCreator
+    public User(
+            @JsonProperty("_id") String _id,
+            @JsonProperty("hashedPassword") String hashedPassword,
+            @JsonProperty("firstName") String firstName,
+            @JsonProperty("lastName") String lastName) {
         this._id = _id;
         this.hashedPassword = hashedPassword;
         this.firstName = firstName;
         this.lastName = lastName;
+
         this.friends = new ArrayList<User>();
+        this.friendRequests = new ArrayList<FriendRequest>();
     }
 
     public String get_id() {
@@ -61,7 +77,22 @@ public class User {
         friends.remove(u);
     }
 
-    public boolean isFriend(User u) {
+    public boolean isFriendsWith(User u) {
         return friends.contains(u);
+    }
+
+    public void addFriendRequest(FriendRequest fr) {
+        friendRequests.add(fr);
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "_id='" + _id + '\'' +
+                ", hashedPassword='" + hashedPassword + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", friends=" + friends +
+                '}';
     }
 }

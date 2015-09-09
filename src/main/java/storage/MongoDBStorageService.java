@@ -2,6 +2,7 @@ package storage;
 
 import static com.mongodb.client.model.Filters.eq;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoException;
@@ -11,8 +12,11 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoCollection;
 import controller.DatabaseConfig;
 import controller.ServiceController;
+import storage.mongostoragemodel.FriendRequest;
 import storage.mongostoragemodel.User;
+import util.TimeStamp;
 
+import java.io.IOException;
 import java.util.Base64;
 
 
@@ -53,11 +57,12 @@ public class MongoDBStorageService implements StorageService{
     }
 
     @Override
-    public synchronized boolean createUser(String username, String hashedPassword, String firstName, String lastName) {
+    public synchronized void createUser(String username, String hashedPassword, String firstName, String lastName)
+            throws StorageException {
         MongoCollection<Document> coll = database.getCollection(USER_COLLECTION);
         Document user = coll.find(eq("_id", username)).first();
         if (user != null) {
-            return false;
+            throw new StorageException("Username already exists");
         }
         User u = new User(username, hashedPassword, firstName, lastName);
         ObjectMapper mapper = new ObjectMapper();
@@ -65,15 +70,59 @@ public class MongoDBStorageService implements StorageService{
         try {
             userJson = mapper.writeValueAsString(u);
         } catch (JsonProcessingException e) {
-            return false;
+            throw new StorageException("Bad User serialization\n" + e.getMessage())
         }
 
         Document doc = Document.parse(userJson);
         try {
             coll.insertOne(doc);
         } catch (MongoException e) {
-            return false;
+            throw new StorageException("Unable to insert into database \n" + e.getMessage());
         }
-        return true;
+    }
+
+    @Override
+    public void insertFriendRequest(String senderUsername, String targetUsername) throws StorageException {
+        MongoCollection<Document> coll = database.getCollection(USER_COLLECTION);
+        User target = getUserFromDB(coll, targetUsername);
+
+        FriendRequest fr = new FriendRequest(senderUsername, TimeStamp.getCurrentTimeUTC());
+        target.addFriendRequest(fr);
+
+        updateUser(coll, target);
+    }
+
+    private User getUserFromDB(MongoCollection<Document> coll, String username) throws StorageException {
+        Document userDoc = coll.find(eq("_id", username)).first();
+        if (userDoc == null) {
+            throw new StorageException("User not found");
+        }
+
+        ObjectMapper mapper = new ObjectMapper();
+        User user = null;
+        try {
+            user = mapper.readValue(userDoc.toJson(), User.class);
+        } catch (IOException e) {
+            throw new StorageException("Bad User Serialization\n" + e.getMessage());
+        }
+
+        return user;
+    }
+
+    private void updateUser(MongoCollection<Document> coll, User u) throws StorageException {
+        String json = null;
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            json = mapper.writeValueAsString(u);
+        } catch (JsonProcessingException e) {
+            throw new StorageException("Bad User serialization\n" + e.getMessage());
+        }
+        
+        Document updatedUser = Document.parse(json);
+        try {
+            coll.replaceOne(eq("_id", u.get_id()), updatedUser);
+        } catch (MongoException e) {
+            throw new StorageException("Unable to add to database\n" + e.getMessage());
+        }
     }
 }
