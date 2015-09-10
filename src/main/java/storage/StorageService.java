@@ -18,4 +18,6 @@ public interface StorageService {
     Set<UserInfo> getFriendRequestsFor(String username) throws StorageException;
 
     void createFriendship(String frAcceptor, String frSender) throws StorageException, FriendshipException;
+
+    void removeFriend(String removerUsername, String removeeUsername) throws StorageException;
 }

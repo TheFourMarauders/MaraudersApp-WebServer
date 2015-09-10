@@ -144,6 +144,23 @@ public class MongoDBStorageService implements StorageService{
         updateUser(sender);
     }
 
+    @Override
+    public void removeFriend(String removerUsername, String removeeUsername) throws StorageException {
+        User remover = getUserFromDB(removerUsername);
+        User removee = null;
+        try {
+            removee = getUserFromDB(removeeUsername);
+        } catch (NoSuchUserException e) {
+            return; // muahaha
+        }
+
+        remover.removeFriend(removee);
+        removee.removeFriend(remover);
+
+        updateUser(remover);
+        updateUser(removee);
+    }
+
     private User getUserFromDB(String username) throws StorageException {
         MongoCollection<Document> coll = database.getCollection(USER_COLLECTION);
         Document userDoc = coll.find(eq("_id", username)).first();
