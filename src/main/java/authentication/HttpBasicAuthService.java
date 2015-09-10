@@ -3,6 +3,7 @@ package authentication;
 import controller.AuthConfig;
 import controller.ServiceController;
 
+import storage.StorageException;
 import storage.StorageService;
 
 import java.security.MessageDigest;
@@ -43,12 +44,17 @@ public class HttpBasicAuthService implements AuthenticationService{
             //TODO: Log error
             throw new AuthenticationException(ex.getMessage(), 500);
 
+        } catch (StorageException ex) {
+            throw new AuthenticationException(ex.getMessage(), 500);
         }
     }
 
     @Override
     public void authenticateUserAcess(String authToken, String targetUser) throws AuthenticationException{
         Credentials cred = getUsernamePassword(authToken);
+        if(targetUser == null || targetUser.isEmpty()){
+            throw new AuthenticationException("Invalid target username", 401);
+        }
     }
 
     private Credentials getUsernamePassword(String authToken) throws AuthenticationException{
