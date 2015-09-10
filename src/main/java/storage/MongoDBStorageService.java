@@ -2,7 +2,6 @@ package storage;
 
 import static com.mongodb.client.model.Filters.eq;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoException;
@@ -70,7 +69,7 @@ public class MongoDBStorageService implements StorageService{
         try {
             userJson = mapper.writeValueAsString(u);
         } catch (JsonProcessingException e) {
-            throw new StorageException("Bad User serialization\n" + e.getMessage())
+            throw new StorageException("Bad User serialization\n" + e.getMessage());
         }
 
         Document doc = Document.parse(userJson);
@@ -83,16 +82,22 @@ public class MongoDBStorageService implements StorageService{
 
     @Override
     public void insertFriendRequest(String senderUsername, String targetUsername) throws StorageException {
-        MongoCollection<Document> coll = database.getCollection(USER_COLLECTION);
-        User target = getUserFromDB(coll, targetUsername);
+        User target = getUserFromDB(targetUsername);
 
         FriendRequest fr = new FriendRequest(senderUsername, TimeStamp.getCurrentTimeUTC());
         target.addFriendRequest(fr);
 
-        updateUser(coll, target);
+        updateUser(target);
     }
 
-    private User getUserFromDB(MongoCollection<Document> coll, String username) throws StorageException {
+    @Override
+    public boolean areUsersFriends(String username1, String username2) throws StorageException {
+        User user1 = getUserFromDB(username1);
+        return user1.isFriendsWith(username2);
+    }
+
+    private User getUserFromDB(String username) throws StorageException {
+        MongoCollection<Document> coll = database.getCollection(USER_COLLECTION);
         Document userDoc = coll.find(eq("_id", username)).first();
         if (userDoc == null) {
             throw new StorageException("User not found");
@@ -109,7 +114,8 @@ public class MongoDBStorageService implements StorageService{
         return user;
     }
 
-    private void updateUser(MongoCollection<Document> coll, User u) throws StorageException {
+    private void updateUser(User u) throws StorageException {
+        MongoCollection<Document> coll = database.getCollection(USER_COLLECTION);
         String json = null;
         ObjectMapper mapper = new ObjectMapper();
         try {
@@ -117,7 +123,7 @@ public class MongoDBStorageService implements StorageService{
         } catch (JsonProcessingException e) {
             throw new StorageException("Bad User serialization\n" + e.getMessage());
         }
-        
+
         Document updatedUser = Document.parse(json);
         try {
             coll.replaceOne(eq("_id", u.get_id()), updatedUser);

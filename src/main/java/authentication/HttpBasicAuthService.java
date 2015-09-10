@@ -55,6 +55,14 @@ public class HttpBasicAuthService implements AuthenticationService{
         if(targetUser == null || targetUser.isEmpty()){
             throw new AuthenticationException("Invalid target username", 401);
         }
+
+        try {
+            if (!(ServiceController.getInstance().getStorageService().areUsersFriends(cred.username, targetUser))) {
+                throw new AuthenticationException("Not friend of user", 403);
+            }
+        } catch (StorageException e) {
+            throw new AuthenticationException("Data retrieval error", 500);
+        }
     }
 
     private Credentials getUsernamePassword(String authToken) throws AuthenticationException{

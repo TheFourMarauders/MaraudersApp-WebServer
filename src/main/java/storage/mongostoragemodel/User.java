@@ -81,6 +81,10 @@ public class User {
         return friends.contains(u);
     }
 
+    public boolean isFriendsWith(String username) {
+        return isFriendsWith(new User(username, "", "", ""));
+    }
+
     public void addFriendRequest(FriendRequest fr) {
         friendRequests.add(fr);
     }
@@ -94,5 +98,21 @@ public class User {
                 ", lastName='" + lastName + '\'' +
                 ", friends=" + friends +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || !(o instanceof User)) return false;
+
+        User user = (User) o;
+
+        return user._id.equals(_id);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = get_id().hashCode();
+        return result;
     }
 }

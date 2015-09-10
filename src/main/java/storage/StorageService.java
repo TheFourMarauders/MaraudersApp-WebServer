@@ -10,4 +10,6 @@ public interface StorageService {
             throws StorageException;
 
     void insertFriendRequest(String senderUsername, String targetUser) throws StorageException;
+
+    boolean areUsersFriends(String username1, String username2) throws StorageException;
 }
