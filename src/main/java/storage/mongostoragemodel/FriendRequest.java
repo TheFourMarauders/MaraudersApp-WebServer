@@ -20,4 +20,24 @@ public class FriendRequest {
         this.senderUsername = senderUsername;
         this.timeStamp = timeStamp;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || !(o instanceof FriendRequest)) return false;
+
+        FriendRequest that = (FriendRequest) o;
+
+        return !(senderUsername != null ? !senderUsername.equals(that.senderUsername) : that.senderUsername != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return senderUsername != null ? senderUsername.hashCode() : 0;
+    }
+
+    public String getSenderUsername() {
+        return senderUsername;
+    }
 }

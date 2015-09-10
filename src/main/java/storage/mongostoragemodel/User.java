@@ -41,6 +41,10 @@ public class User {
         return _id;
     }
 
+    public List<FriendRequest> getFriendRequests() {
+        return new ArrayList<FriendRequest>(friendRequests);
+    }
+
     public void set_id(String _id) {
         this._id = _id;
     }
@@ -86,7 +90,17 @@ public class User {
     }
 
     public void addFriendRequest(FriendRequest fr) {
-        friendRequests.add(fr);
+        if (!(friendRequests.contains(fr))) {
+            friendRequests.add(fr);
+        }
+    }
+
+    public void removeFriendRequest(FriendRequest fr) {
+        friendRequests.remove(fr);
+    }
+
+    public void removeFriendRequest(String frSender) {
+        friendRequests.remove(new FriendRequest(frSender, null));
     }
 
     @Override

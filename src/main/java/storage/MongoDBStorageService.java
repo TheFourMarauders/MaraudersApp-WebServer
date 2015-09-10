@@ -17,6 +17,8 @@ import util.TimeStamp;
 
 import java.io.IOException;
 import java.util.Base64;
+import java.util.HashSet;
+import java.util.Set;
 
 
 /**
@@ -96,11 +98,57 @@ public class MongoDBStorageService implements StorageService{
         return user1.isFriendsWith(username2);
     }
 
+    @Override
+    public Set<UserInfo> getFriendRequestsFor(String username) throws StorageException {
+        User user = getUserFromDB(username);
+        Set<UserInfo> requests = new HashSet<UserInfo>();
+        boolean dirty = false;
+
+        for (FriendRequest fr : user.getFriendRequests()) {
+            try {
+                User requester = getUserFromDB(fr.getSenderUsername());
+                UserInfo requesterInfo =
+                        new UserInfo(requester.get_id(), requester.getFirstName(), requester.getLastName());
+                requests.add(requesterInfo);
+            } catch (NoSuchUserException e) {
+                user.removeFriendRequest(fr);
+                dirty = true;
+            }
+        }
+        if (dirty) {
+            updateUser(user);
+        }
+
+        return requests;
+    }
+
+    @Override
+    public void createFriendship(String frAcceptor, String frSender) throws StorageException, FriendshipException {
+        User acceptor = getUserFromDB(frAcceptor);
+        User sender = null;
+        try {
+            sender = getUserFromDB(frSender);
+        } catch (NoSuchUserException e) {
+            return;
+        }
+
+        if (!(acceptor.getFriendRequests().contains(new FriendRequest(frSender, null)))) {
+            throw new FriendshipException("No outstanding friend request for users: " + frAcceptor + "<--" + frSender);
+        }
+        acceptor.removeFriendRequest(frSender);
+
+        acceptor.addFriend(sender);
+        sender.addFriend(acceptor);
+
+        updateUser(acceptor);
+        updateUser(sender);
+    }
+
     private User getUserFromDB(String username) throws StorageException {
         MongoCollection<Document> coll = database.getCollection(USER_COLLECTION);
         Document userDoc = coll.find(eq("_id", username)).first();
         if (userDoc == null) {
-            throw new StorageException("User not found");
+            throw new NoSuchUserException("User not found");
         }
 
         ObjectMapper mapper = new ObjectMapper();
