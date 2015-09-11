@@ -21,33 +21,33 @@ public class WebServer
     {
         //Load config
         spark.Spark.port(8080);
-        spark.Spark.threadPool(Runtime.getRuntime().availableProcessors());
+        //spark.Spark.threadPool(Runtime.getRuntime().availableProcessors());
 
         //Authentication it is done through before
         before("/api/services", (req, res) -> {
-            if(!authService.authenticate((req))) {
-                halt(401, "Thou shall not pass, invalid credentials");
-            }
+            halt(401, "Thou shall not pass, invalid credentials");
         });
 
 
         post("/api/create-user", (req, res) -> {
             //create user
+            return null;
         });
 
         put("/api/services/user/:username/send-friend-request/:targetusername", (req, res) -> {
             //add friend request to target user specified in json
+            return null;
         });
 
         get("/api/services/user/:username/incoming-friend-requests", (req, res) -> {
-
+            return null;
         });
 
         put("/api/services/user/:username/accept-friend/:targetfriend", (req, res) -> {
-
+            return null;
         });
         delete("/api/services/user/:username/delete-friend/:targetfriend", (req, res) -> {
-
+            return null;
         });
 
 

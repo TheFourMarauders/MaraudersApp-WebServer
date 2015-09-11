@@ -6,6 +6,9 @@ import spark.Request;
  */
 public interface AuthenticationService {
     void authenticate(String authToken) throws AuthenticationException;
-    void authenticateUserAcess(String authToken, String targetUser) throws AuthenticationException;
+
+    void validateFriendAccess(String authToken, String targetUser) throws AuthenticationException;
+
+    void validate(String authToken, String username) throws AuthenticationException;
     //boolean authenticateGroupAcess(String authToken, String targetGroup);
 }

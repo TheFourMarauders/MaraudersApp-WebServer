@@ -50,10 +50,10 @@ public class HttpBasicAuthService implements AuthenticationService{
     }
 
     @Override
-    public void authenticateUserAcess(String authToken, String targetUser) throws AuthenticationException{
+    public void validateFriendAccess(String authToken, String targetUser) throws AuthenticationException{
         Credentials cred = getUsernamePassword(authToken);
         if(targetUser == null || targetUser.isEmpty()){
-            throw new AuthenticationException("Invalid target username", 401);
+            throw new AuthenticationException("Invalid target username", 400);
         }
 
         try {
@@ -62,6 +62,14 @@ public class HttpBasicAuthService implements AuthenticationService{
             }
         } catch (StorageException e) {
             throw new AuthenticationException("Data retrieval error", 500);
+        }
+    }
+
+    @Override
+    public void validate(String authToken, String username) throws AuthenticationException {
+        Credentials cred = getUsernamePassword(authToken);
+        if (cred.username.equals(username)) {
+            throw new AuthenticationException("Forbidden", 403);
         }
     }
 
