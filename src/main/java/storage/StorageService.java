@@ -1,5 +1,7 @@
 package storage;
 
+import controller.HTTPException;
+
 import java.util.Set;
 
 /**
@@ -8,8 +10,8 @@ import java.util.Set;
 public interface StorageService {
     byte[] getHashedPassword(String username) throws StorageException;
 
-    void createUser(String username, String hashedPassword, String firstName, String lastName)
-            throws StorageException;
+    void createUser(String username, String password, String firstName, String lastName)
+            throws StorageException, HTTPException;
 
     void insertFriendRequest(String senderUsername, String targetUser) throws StorageException;
 

@@ -1,6 +1,11 @@
 package TheFourMarauders;
 
+import TheFourMarauders.requestschema.UserCreationRequest;
 import authentication.AuthenticationService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import controller.HTTPException;
+import controller.ServiceController;
 
 import static spark.Spark.get;
 import static spark.Spark.before;
@@ -30,8 +35,17 @@ public class WebServer
 
 
         post("/api/create-user", (req, res) -> {
-            //create user
-            return null;
+            try {
+                ObjectMapper mapper = new ObjectMapper();
+                UserCreationRequest r = mapper.readValue(req.body(), UserCreationRequest.class);
+                ServiceController.getInstance()
+                        .createUser(r.getUsername(), r.getPassword(), r.getFirstName(), r.getLastName());
+            } catch (JsonProcessingException e) {
+                halt(400, "Invalid request schema");
+            } catch (HTTPException e) {
+                halt(e.getHttpErrorCode(), e.getMessage());
+            }
+            return "Success!";
         });
 
         put("/api/services/user/:username/send-friend-request/:targetusername", (req, res) -> {

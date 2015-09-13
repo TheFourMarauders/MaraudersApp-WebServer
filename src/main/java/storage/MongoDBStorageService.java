@@ -5,6 +5,8 @@ import static com.mongodb.client.model.Filters.eq;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoException;
+import controller.AuthConfig;
+import controller.HTTPException;
 import org.bson.Document;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoDatabase;
@@ -16,6 +18,9 @@ import storage.mongostoragemodel.User;
 import util.TimeStamp;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.HashSet;
 import java.util.Set;
@@ -33,8 +38,7 @@ public class MongoDBStorageService implements StorageService{
     private static final String GROUP_COLLECTION = "groups";
 
     public static StorageService getInstance() {
-        if(instance == null)
-        {
+        if(instance == null) {
             instance = new MongoDBStorageService();
         }
         return instance;
@@ -58,14 +62,25 @@ public class MongoDBStorageService implements StorageService{
     }
 
     @Override
-    public synchronized void createUser(String username, String hashedPassword, String firstName, String lastName)
-            throws StorageException {
+    public synchronized void createUser(String username, String password, String firstName, String lastName)
+            throws StorageException, HTTPException {
         MongoCollection<Document> coll = database.getCollection(USER_COLLECTION);
         Document user = coll.find(eq("_id", username)).first();
         if (user != null) {
-            throw new StorageException("Username already exists");
+            throw new UserAlreadyExistsException();
         }
-        User u = new User(username, hashedPassword, firstName, lastName);
+
+        AuthConfig authConfig = ServiceController.getInstance().getAuthConfig();
+        String encodedHashPass = null;
+        try {
+            MessageDigest digest = MessageDigest.getInstance(authConfig.getHashAlgo());
+            byte[] hashedPassword = digest.digest(password.getBytes(authConfig.getEncoding()));
+            encodedHashPass = new String(Base64.getEncoder().encode(hashedPassword), "UTF8");
+        } catch (UnsupportedEncodingException | NoSuchAlgorithmException e) {
+            throw new HTTPException("Critical server error :(", 500);
+        }
+
+        User u = new User(username, encodedHashPass, firstName, lastName);
         ObjectMapper mapper = new ObjectMapper();
         String userJson = null;
         try {
