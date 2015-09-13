@@ -68,7 +68,7 @@ public class HttpBasicAuthService implements AuthenticationService{
     @Override
     public void validate(String authToken, String username) throws AuthenticationException {
         Credentials cred = getUsernamePassword(authToken);
-        if (cred.username.equals(username)) {
+        if (!(cred.username.equals(username))) {
             throw new AuthenticationException("Forbidden", 403);
         }
     }

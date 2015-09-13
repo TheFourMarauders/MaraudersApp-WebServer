@@ -3,9 +3,10 @@ package storage.mongostoragemodel;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import storage.UserInfo;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created by Joe on 9/7/2015.
@@ -17,10 +18,10 @@ public class User {
     private String lastName;
 
     @JsonProperty("friends")
-    private List<User> friends;
+    private Set<UserInfo> friends;
 
     @JsonProperty("friendRequest")
-    private List<FriendRequest> friendRequests;
+    private Set<FriendRequest> friendRequests;
 
     @JsonCreator
     public User(
@@ -33,16 +34,20 @@ public class User {
         this.firstName = firstName;
         this.lastName = lastName;
 
-        this.friends = new ArrayList<User>();
-        this.friendRequests = new ArrayList<FriendRequest>();
+        this.friends = new HashSet<>();
+        this.friendRequests = new HashSet<>();
     }
 
     public String get_id() {
         return _id;
     }
 
-    public List<FriendRequest> getFriendRequests() {
-        return new ArrayList<FriendRequest>(friendRequests);
+    public Set<FriendRequest> getFriendRequests() {
+        return new HashSet<FriendRequest>(friendRequests);
+    }
+
+    public Set<UserInfo> getFriends() {
+        return new HashSet<UserInfo>(friends);
     }
 
     public void set_id(String _id) {
@@ -74,11 +79,11 @@ public class User {
     }
 
     public void addFriend(User u) {
-        friends.add(u);
+        friends.add(new UserInfo(u.get_id(), u.getFirstName(), u.getLastName()));
     }
 
     public void removeFriend(User u) {
-        friends.remove(u);
+        friends.remove(new UserInfo(u.get_id(), u.getFirstName(), u.getLastName()));
     }
 
     public boolean isFriendsWith(User u) {

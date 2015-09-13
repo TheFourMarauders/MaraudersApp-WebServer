@@ -15,7 +15,7 @@ public class FriendRequest {
 
     @JsonCreator
     public FriendRequest(
-            @JsonProperty("timeStamp") String senderUsername,
+            @JsonProperty("senderUsername") String senderUsername,
             @JsonProperty("timeStamp") ZonedDateTime timeStamp) {
         this.senderUsername = senderUsername;
         this.timeStamp = timeStamp;

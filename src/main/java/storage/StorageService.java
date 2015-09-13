@@ -11,13 +11,15 @@ public interface StorageService {
     byte[] getHashedPassword(String username) throws StorageException;
 
     void createUser(String username, String password, String firstName, String lastName)
-            throws StorageException, HTTPException;
+            throws HTTPException;
 
-    void insertFriendRequest(String senderUsername, String targetUser) throws StorageException;
+    void insertFriendRequest(String senderUsername, String targetUser) throws HTTPException;
 
     boolean areUsersFriends(String username1, String username2) throws StorageException;
 
     Set<UserInfo> getFriendRequestsFor(String username) throws StorageException;
+
+    Set<UserInfo> getFriendsFor(String username) throws StorageException;
 
     void createFriendship(String frAcceptor, String frSender) throws StorageException, FriendshipException;
 

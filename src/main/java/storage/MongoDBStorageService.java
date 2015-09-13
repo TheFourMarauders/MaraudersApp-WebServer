@@ -58,7 +58,7 @@ public class MongoDBStorageService implements StorageService{
             return null;
         }
 
-        return Base64.getDecoder().decode(user.getString("HashedPassword"));
+        return Base64.getDecoder().decode(user.getString("hashedPassword"));
     }
 
     @Override
@@ -98,8 +98,17 @@ public class MongoDBStorageService implements StorageService{
     }
 
     @Override
-    public void insertFriendRequest(String senderUsername, String targetUsername) throws StorageException {
+    public void insertFriendRequest(String senderUsername, String targetUsername) throws HTTPException {
+        User sender = getUserFromDB(senderUsername);
         User target = getUserFromDB(targetUsername);
+
+        if (sender.getFriendRequests().contains(new UserInfo(targetUsername))) {
+            createFriendship(senderUsername, targetUsername);
+            throw new HTTPException("You already have a friend request from: " + targetUsername
+                    + " We have added them as a friend for you :)", 201);
+        } else if (target.getFriendRequests().contains(new UserInfo(senderUsername))) {
+            throw new HTTPException("I'm a teapot, and you've already sent a request to this person. Be patient :)", 409);
+        }
 
         FriendRequest fr = new FriendRequest(senderUsername, TimeStamp.getCurrentTimeUTC());
         target.addFriendRequest(fr);
@@ -135,6 +144,13 @@ public class MongoDBStorageService implements StorageService{
         }
 
         return requests;
+    }
+
+    @Override
+    public Set<UserInfo> getFriendsFor(String username) throws StorageException {
+        User u = getUserFromDB(username);
+        Set<UserInfo> friends = new HashSet<>();
+        return u.getFriends();
     }
 
     @Override

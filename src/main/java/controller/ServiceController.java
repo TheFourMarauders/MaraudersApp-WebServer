@@ -1,12 +1,12 @@
 package controller;
 
+import authentication.AuthenticationException;
 import authentication.AuthenticationService;
 import authentication.HttpBasicAuthService;
 import com.mongodb.Mongo;
-import storage.MongoDBStorageService;
-import storage.StorageException;
-import storage.StorageService;
-import storage.UserAlreadyExistsException;
+import storage.*;
+
+import java.util.Set;
 
 
 /**
@@ -66,4 +66,31 @@ public class ServiceController {
         }
     }
 
+    public void authenticate(String authtoken) throws HTTPException {
+        getAuthService().authenticate(authtoken);
+    }
+
+    public void validate(String authtoken, String target) throws HTTPException {
+        getAuthService().validate(authtoken, target);
+    }
+
+    public void sendFriendRequest(String senderUsername, String targetUsername) throws HTTPException {
+        getStorageService().insertFriendRequest(senderUsername, targetUsername);
+    }
+
+    public Set getFriendRequestsFor(String user) throws HTTPException {
+        return getStorageService().getFriendRequestsFor(user);
+    }
+
+    public void acceptFriendRequest(String acceptor, String acceptee) throws HTTPException {
+        getStorageService().createFriendship(acceptor, acceptee);
+    }
+
+    public void removeFriend(String user, String target) throws HTTPException {
+        getStorageService().removeFriend(user, target);
+    }
+
+    public Set getFriends(String user) throws HTTPException {
+        return getStorageService().getFriendsFor(user);
+    }
 }

@@ -1,5 +1,9 @@
 package storage;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import storage.mongostoragemodel.User;
+
 /**
  * Created by Joe on 9/10/2015.
  */
@@ -7,10 +11,18 @@ public class UserInfo {
 
     private String username, firstName, lastName;
 
-    public UserInfo(String username, String firstName, String lastName) {
+    @JsonCreator
+    public UserInfo(
+            @JsonProperty("username") String username,
+            @JsonProperty("firstName") String firstName,
+            @JsonProperty("lastName") String lastName) {
         this.username = username;
         this.firstName = firstName;
         this.lastName = lastName;
+    }
+
+    public UserInfo(String username) {
+        this(username, "", "");
     }
 
     @Override
