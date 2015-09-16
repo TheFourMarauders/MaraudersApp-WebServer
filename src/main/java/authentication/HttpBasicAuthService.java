@@ -13,16 +13,13 @@ import java.util.Base64;
  * Created by Matthew on 9/7/2015.
  */
 public class HttpBasicAuthService implements AuthenticationService{
-    private static HttpBasicAuthService instance;
 
-    public static HttpBasicAuthService getInstance() {
-        if (instance == null) {
-            instance = new HttpBasicAuthService();
-        }
-        return instance;
-    }
+    private AuthConfig authConfig;
+    private StorageService storageService;
 
-    private HttpBasicAuthService() {
+    public HttpBasicAuthService(AuthConfig authConfig, StorageService storageService) {
+        this.authConfig = authConfig;
+        this.storageService = storageService;
     }
 
     @Override
@@ -31,10 +28,8 @@ public class HttpBasicAuthService implements AuthenticationService{
         String username = cred.getUsername();
         String password = cred.getPassword();
         try {
-            AuthConfig authConfig = ServiceController.getInstance().getAuthConfig();
             MessageDigest digest = MessageDigest.getInstance(authConfig.getHashAlgo());
             byte[] hashedPassword = digest.digest(password.getBytes(authConfig.getEncoding()));
-            StorageService storageService = ServiceController.getInstance().getStorageService();
             byte[] storedPassword = storageService.getHashedPassword(username);
             if (storedPassword == null || storedPassword.length != hashedPassword.length
                     || !Arrays.equals(hashedPassword, storedPassword)) {
@@ -57,7 +52,7 @@ public class HttpBasicAuthService implements AuthenticationService{
         }
 
         try {
-            if (!(ServiceController.getInstance().getStorageService().areUsersFriends(cred.username, targetUser))) {
+            if (storageService.areUsersFriends(cred.username, targetUser)) {
                 throw new AuthenticationException("Not friend of user", 403);
             }
         } catch (StorageException e) {

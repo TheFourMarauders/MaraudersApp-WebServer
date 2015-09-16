@@ -13,7 +13,7 @@ public interface StorageService {
     void createUser(String username, String password, String firstName, String lastName)
             throws HTTPException;
 
-    void insertFriendRequest(String senderUsername, String targetUser) throws HTTPException;
+    void insertFriendRequest(String senderUsername, String targetUsername) throws HTTPException;
 
     boolean areUsersFriends(String username1, String username2) throws StorageException;
 

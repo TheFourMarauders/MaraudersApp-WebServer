@@ -21,6 +21,10 @@ public class FriendRequest {
         this.timeStamp = timeStamp;
     }
 
+    public FriendRequest(String senderUsername) {
+        this(senderUsername, TimeStamp.getCurrentTimeUTC());
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

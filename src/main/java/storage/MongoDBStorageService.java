@@ -17,6 +17,7 @@ import storage.mongostoragemodel.FriendRequest;
 import storage.mongostoragemodel.User;
 import util.TimeStamp;
 
+import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
@@ -30,22 +31,18 @@ import java.util.Set;
  * Created by Matthew on 9/7/2015.
  */
 public class MongoDBStorageService implements StorageService{
-    private static StorageService instance;
     private MongoClient mongoClient;
     private MongoDatabase database;
+
+    private DatabaseConfig dbConfig;
+    private AuthConfig authConfig;
 
     private static final String USER_COLLECTION = "users";
     private static final String GROUP_COLLECTION = "groups";
 
-    public static StorageService getInstance() {
-        if(instance == null) {
-            instance = new MongoDBStorageService();
-        }
-        return instance;
-    }
-
-    private MongoDBStorageService(){
-        DatabaseConfig dbConfig = ServiceController.getInstance().getDbConfig();
+    public MongoDBStorageService(DatabaseConfig dbConfig, AuthConfig authConfig){
+        this.dbConfig = dbConfig;
+        this.authConfig = authConfig;
         mongoClient = new MongoClient(dbConfig.getURL());
         database = mongoClient.getDatabase(dbConfig.getDbName());
     }
@@ -70,7 +67,6 @@ public class MongoDBStorageService implements StorageService{
             throw new UserAlreadyExistsException();
         }
 
-        AuthConfig authConfig = ServiceController.getInstance().getAuthConfig();
         String encodedHashPass = null;
         try {
             MessageDigest digest = MessageDigest.getInstance(authConfig.getHashAlgo());
@@ -102,11 +98,11 @@ public class MongoDBStorageService implements StorageService{
         User sender = getUserFromDB(senderUsername);
         User target = getUserFromDB(targetUsername);
 
-        if (sender.getFriendRequests().contains(new UserInfo(targetUsername))) {
+        if (sender.getFriendRequests().contains(new FriendRequest(targetUsername))) {
             createFriendship(senderUsername, targetUsername);
             throw new HTTPException("You already have a friend request from: " + targetUsername
                     + " We have added them as a friend for you :)", 201);
-        } else if (target.getFriendRequests().contains(new UserInfo(senderUsername))) {
+        } else if (target.getFriendRequests().contains(new FriendRequest(senderUsername))) {
             throw new HTTPException("I'm a teapot, and you've already sent a request to this person. Be patient :)", 409);
         }
 
@@ -149,7 +145,6 @@ public class MongoDBStorageService implements StorageService{
     @Override
     public Set<UserInfo> getFriendsFor(String username) throws StorageException {
         User u = getUserFromDB(username);
-        Set<UserInfo> friends = new HashSet<>();
         return u.getFriends();
     }
 

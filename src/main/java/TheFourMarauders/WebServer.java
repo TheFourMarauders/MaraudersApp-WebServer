@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import controller.HTTPException;
 import controller.ServiceController;
+import controller.ServiceFactory;
 
 import javax.xml.ws.Service;
 
@@ -31,10 +32,12 @@ public class WebServer
         spark.Spark.port(8080);
         //spark.Spark.threadPool(Runtime.getRuntime().availableProcessors());
 
+        ServiceController serviceController = new ServiceFactory().build();
+
         //Authentication it is done through before
         before("/api/services/*", (req, res) -> {
             try {
-                ServiceController.getInstance().authenticate(req.headers("Authorization"));
+                serviceController.authenticate(req.headers("Authorization"));
             } catch (HTTPException e) {
                 halt(e.getHttpErrorCode(), e.getMessage());
             }
@@ -45,7 +48,7 @@ public class WebServer
             try {
                 ObjectMapper mapper = new ObjectMapper();
                 UserCreationRequest r = mapper.readValue(req.body(), UserCreationRequest.class);
-                ServiceController.getInstance()
+                serviceController
                         .createUser(r.getUsername(), r.getPassword(), r.getFirstName(), r.getLastName());
                 return "Successfully created user: " + r.getUsername() + "\n Welcome to MaraudersApp!";
             } catch (JsonProcessingException e) {
@@ -62,9 +65,9 @@ public class WebServer
                 String sender = req.params(":username");
                 String target = req.params(":targetusername");
                 String authtoken = req.headers("Authorization");
-                ServiceController.getInstance().validate(authtoken, sender);
+                serviceController.validate(authtoken, sender);
 
-                ServiceController.getInstance().sendFriendRequest(sender, target);
+                serviceController.sendFriendRequest(sender, target);
                 return "Successfully sent friend request to: " + target;
             } catch (HTTPException e) {
                 halt(e.getHttpErrorCode(), e.getMessage());
@@ -76,11 +79,11 @@ public class WebServer
             try {
                 String user = req.params(":username");
                 String authtoken = req.headers("Authorization");
-                ServiceController.getInstance().validate(authtoken, user);
+                serviceController.validate(authtoken, user);
 
                 ObjectMapper mapper = new ObjectMapper();
                 String friendReqs = mapper.writeValueAsString(
-                        ServiceController.getInstance().getFriendRequestsFor(user));
+                        serviceController.getFriendRequestsFor(user));
                 res.type("application/json");
                 res.status(200);
                 return friendReqs;
@@ -95,9 +98,9 @@ public class WebServer
                 String user = req.params(":username");
                 String target = req.params(":targetfriend");
                 String authtoken = req.headers("Authorization");
-                ServiceController.getInstance().validate(authtoken, user);
+                serviceController.validate(authtoken, user);
 
-                ServiceController.getInstance().acceptFriendRequest(user, target);
+                serviceController.acceptFriendRequest(user, target);
                 return "Successfully added friend: " + target;
             } catch (HTTPException e) {
                 halt(e.getHttpErrorCode(), e.getMessage());
@@ -109,9 +112,9 @@ public class WebServer
                 String user = req.params(":username");
                 String target = req.params(":targetfriend");
                 String authtoken = req.headers("Authorization");
-                ServiceController.getInstance().validate(authtoken, user);
+                serviceController.validate(authtoken, user);
 
-                ServiceController.getInstance().removeFriend(user, target);
+                serviceController.removeFriend(user, target);
                 return "Successfully deleted friend: " + target;
             } catch (HTTPException e) {
                 halt(e.getHttpErrorCode(), e.getMessage());
@@ -124,11 +127,11 @@ public class WebServer
             try {
                 String user = req.params(":username");
                 String authtoken = req.headers("Authorization");
-                ServiceController.getInstance().validate(authtoken, user);
+                serviceController.validate(authtoken, user);
 
                 res.type("application/json");
                 res.status(200);
-                return new ObjectMapper().writeValueAsString(ServiceController.getInstance().getFriends(user));
+                return new ObjectMapper().writeValueAsString(serviceController.getFriends(user));
             } catch (HTTPException e) {
                 halt(e.getHttpErrorCode(), e.getMessage());
             }
