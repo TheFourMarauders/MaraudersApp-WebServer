@@ -1,6 +1,5 @@
 package authentication;
 
-import spark.Request;
 /**
  * Created by Matthew on 9/7/2015.
  */
@@ -10,5 +9,4 @@ public interface AuthenticationService {
     void validateFriendAccess(String authToken, String targetUser) throws AuthenticationException;
 
     void validate(String authToken, String username) throws AuthenticationException;
-    //boolean authenticateGroupAcess(String authToken, String targetGroup);
 }
