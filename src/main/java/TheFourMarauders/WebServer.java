@@ -28,11 +28,16 @@ public class WebServer
     private static AuthenticationService authService;
     public static void main( String[] args )
     {
+        ServiceController serviceController2 = null;
+        if (args.length > 0 && args[0].equals("test")) {
+            serviceController2 = new ServiceFactory().buildLocal();
+        } else {
+            serviceController2 = new ServiceFactory().build();
+        }
+        ServiceController serviceController = serviceController2;
         //Load config
         spark.Spark.port(8080);
         //spark.Spark.threadPool(Runtime.getRuntime().availableProcessors());
-
-        ServiceController serviceController = new ServiceFactory().build();
 
         //Authentication it is done through before
         before("/api/services/*", (req, res) -> {

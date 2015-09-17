@@ -24,12 +24,19 @@ public class ServiceController {
 
     public void createUser(String username, String password, String firstName, String lastName) throws HTTPException {
         try {
+            if (!isValid(username) || !isValid(password) || !isValid(firstName) || !isValid(lastName)) {
+                throw new HTTPException("Invalid user information: empty field", 400);
+            }
             storageService.createUser(username, password, firstName, lastName);
         } catch (UserAlreadyExistsException e) {
             throw new HTTPException("Conflict: Username is already in use", 409);
         } catch (StorageException e) {
             throw new HTTPException("Error creating user", 500);
         }
+    }
+
+    private boolean isValid(String info) {
+        return info != null && info.length() > 0;
     }
 
     public void authenticate(String authtoken) throws HTTPException {
