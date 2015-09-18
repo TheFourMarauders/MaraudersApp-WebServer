@@ -1,6 +1,7 @@
 package authentication;
 
 import controller.AuthConfig;
+import controller.HTTPException;
 import controller.ServiceController;
 
 import storage.StorageException;
@@ -23,7 +24,7 @@ public class HttpBasicAuthService implements AuthenticationService{
     }
 
     @Override
-    public void authenticate(String authToken) throws AuthenticationException {
+    public void authenticate(String authToken) throws HTTPException {
         Credentials cred = getUsernamePassword(authToken);
         String username = cred.getUsername();
         String password = cred.getPassword();
@@ -45,14 +46,14 @@ public class HttpBasicAuthService implements AuthenticationService{
     }
 
     @Override
-    public void validateFriendAccess(String authToken, String targetUser) throws AuthenticationException{
+    public void validateFriendAccess(String authToken, String targetUser) throws HTTPException {
         Credentials cred = getUsernamePassword(authToken);
         if(targetUser == null || targetUser.isEmpty()){
             throw new AuthenticationException("Invalid target username", 400);
         }
 
         try {
-            if (storageService.areUsersFriends(cred.username, targetUser)) {
+            if (!(storageService.areUsersFriends(cred.username, targetUser))) {
                 throw new AuthenticationException("Not friend of user", 403);
             }
         } catch (StorageException e) {

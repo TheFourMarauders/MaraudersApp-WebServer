@@ -26,7 +26,7 @@ public class MemoryStorageService implements StorageService {
     }
 
     @Override
-    public byte[] getHashedPassword(String username) throws StorageException {
+    public byte[] getHashedPassword(String username) throws HTTPException {
         User u = storage.get(username);
         if (u == null) {
             throw new NoSuchUserException(username);
@@ -77,7 +77,7 @@ public class MemoryStorageService implements StorageService {
     }
 
     @Override
-    public Set<UserInfo> getFriendRequestsFor(String username) throws StorageException {
+    public Set<UserInfo> getFriendRequestsFor(String username) throws HTTPException {
         User user = storage.get(username);
         if (user == null) {
             throw new NoSuchUserException(username);
@@ -100,14 +100,14 @@ public class MemoryStorageService implements StorageService {
     }
 
     @Override
-    public Set<UserInfo> getFriendsFor(String username) throws StorageException {
+    public Set<UserInfo> getFriendsFor(String username) throws HTTPException {
         User u = storage.get(username);
         if (u == null) throw new NoSuchUserException(username);
         return u.getFriends();
     }
 
     @Override
-    public void createFriendship(String frAcceptor, String frSender) throws StorageException, FriendshipException {
+    public void createFriendship(String frAcceptor, String frSender) throws HTTPException {
         User acceptor = storage.get(frAcceptor);
         if (acceptor == null) throw new NoSuchUserException(frAcceptor);
         User sender = null;
@@ -128,7 +128,7 @@ public class MemoryStorageService implements StorageService {
     }
 
     @Override
-    public void removeFriend(String removerUsername, String removeeUsername) throws StorageException {
+    public void removeFriend(String removerUsername, String removeeUsername) throws HTTPException {
         User remover = storage.get(removerUsername);
         if (remover == null) throw new NoSuchUserException(removerUsername);
         User removee = null;

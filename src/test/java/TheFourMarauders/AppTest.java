@@ -6,15 +6,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import com.mashape.unirest.request.HttpRequestWithBody;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static spark.Spark.stop;
 
 /**
@@ -43,20 +40,35 @@ public class AppTest {
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
+
+        /*
+         * Happy Path: user created with unique username - responds 200 OK
+         */
         HttpResponse<String> res = Unirest.post("http://localhost:8080/api/create-user")
                 .header("content-type", "application/json")
                 .body(creationJson)
                 .asString();
+        // should return HTTP status OK - meaning the system successfully created the user
         assertEquals(200, res.getStatus());
 
-        // username conflict
+        res = Unirest.get("http://localhost:8080/api/services/user/jrossi/friends")
+                .basicAuth("jrossi", "pass")
+                .asString();
+        // ensure that the system created the user by trying to access the friends list
+        assertEquals(200, res.getStatus());
+
+        /*
+         * Sad Path 1: username is already in use - responds with 409 Conflict
+         */
         res = Unirest.post("http://localhost:8080/api/create-user")
                 .header("content-type", "application/json")
                 .body(creationJson)
                 .asString();
         assertEquals(409, res.getStatus());
 
-        // empty password field
+        /*
+         * Sad Path 2: empty password field - returns 400 Bad Request
+         */
         res = Unirest.post("http://localhost:8080/api/create-user")
                 .header("content-type", "application/json")
                 .body(creationJson2)
@@ -68,17 +80,87 @@ public class AppTest {
     @Test
     public void addFriendTest() throws UnirestException {
         initUsers();
+
+        /*
+         * Happy path: authorized user sends friend request to valid username - response 200 OK
+         */
         HttpResponse<String> res =
                 Unirest.put("http://localhost:8080/api/services/user/jrossi/send-friend-request/mgruchacz")
                 .basicAuth("jrossi", "pass")
                 .asString();
         assertEquals(200, res.getStatus());
 
+        // authorized user can check friend requests, and see the newly sent one
+        res = Unirest.get("http://localhost:8080/api/services/user/mgruchacz/incoming-friend-requests")
+                .basicAuth("mgruchacz", "pass")
+                .asString();
+        assertEquals(200, res.getStatus());
+        assertNotNull(res.getBody());
+        assertEquals("[{\"username\":\"jrossi\",\"firstName\":\"Joe\",\"lastName\":\"Rossi\"}]",
+                res.getBody());
+
+        // authorized user can accept friend requests
+        res = Unirest.put("http://localhost:8080/api/services/user/mgruchacz/accept-friend/jrossi")
+                .basicAuth("mgruchacz", "pass")
+                .asString();
+        assertEquals(200, res.getStatus());
+
+        // and now the two users are friends :)
+        // here jrossi accesses his friends, and sees mgruchacz added
+        res = Unirest.get("http://localhost:8080/api/services/user/jrossi/friends")
+                .basicAuth("jrossi", "pass")
+                .asString();
+        assertEquals(200, res.getStatus());
+        assertNotNull(res.getBody());
+        assertEquals("[{\"username\":\"mgruchacz\",\"firstName\":\"Matt\",\"lastName\":\"Gruchacz\"}]",
+                res.getBody());
+
+        /*
+         * Sad Path1: Authorized user sends friend request to invalid user - response 400 Bad Request
+         */
         res =
             Unirest.put("http://localhost:8080/api/services/user/jrossi/send-friend-request/gruchinator")
                     .basicAuth("jrossi", "pass")
                     .asString();
         assertEquals(400, res.getStatus());
+
+        /*
+         * Sad Path2: Unauthorized user attempts to do anything... - response 401 Unauthorized
+         */
+        res =
+                Unirest.put("http://localhost:8080/api/services/user/jrossi/send-friend-request/gruchinator")
+                        .basicAuth("jrossi", "notpass")
+                        .asString();
+        assertEquals(401, res.getStatus());
+    }
+
+    @Test
+    public void removeFriendTest() throws UnirestException {
+        initFriends();
+        /*
+         * Happy Path: Authorized user removes a friend - response 200 OK
+         */
+        HttpResponse<String> res =
+                Unirest.delete("http://localhost:8080/api/services/user/jrossi/delete-friend/mgruchacz")
+                        .basicAuth("jrossi", "pass")
+                        .asString();
+        assertEquals(200, res.getStatus());
+
+        // now when jrossi accesses friends, there are none
+        res = Unirest.get("http://localhost:8080/api/services/user/jrossi/friends")
+                .basicAuth("jrossi", "pass")
+                .asString();
+        assertEquals(200, res.getStatus());
+        assertEquals("[]", res.getBody());
+
+        // same for mgruchacz :'(
+        res = Unirest.get("http://localhost:8080/api/services/user/mgruchacz/friends")
+                .basicAuth("mgruchacz", "pass")
+                .asString();
+        assertEquals(200, res.getStatus());
+        assertEquals("[]", res.getBody());
+
+
     }
 
     private void initUsers() throws UnirestException {
@@ -96,9 +178,25 @@ public class AppTest {
                 .header("content-type", "application/json")
                 .body(creationJson)
                 .asString();
-        res = Unirest.post("http://localhost:8080/api/create-user")
+        Unirest.post("http://localhost:8080/api/create-user")
                 .header("content-type", "application/json")
                 .body(creationJson2)
+                .asString();
+    }
+
+    private void initFriends() throws UnirestException {
+        initUsers();
+        Unirest.put("http://localhost:8080/api/services/user/jrossi/send-friend-request/mgruchacz")
+                        .basicAuth("jrossi", "pass")
+                        .asString();
+        Unirest.get("http://localhost:8080/api/services/user/mgruchacz/incoming-friend-requests")
+                .basicAuth("mgruchacz", "pass")
+                .asString();
+        Unirest.put("http://localhost:8080/api/services/user/mgruchacz/accept-friend/jrossi")
+                .basicAuth("mgruchacz", "pass")
+                .asString();
+        Unirest.get("http://localhost:8080/api/services/user/jrossi/friends")
+                .basicAuth("jrossi", "pass")
                 .asString();
     }
 

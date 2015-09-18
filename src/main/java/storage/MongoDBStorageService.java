@@ -113,13 +113,13 @@ public class MongoDBStorageService implements StorageService{
     }
 
     @Override
-    public boolean areUsersFriends(String username1, String username2) throws StorageException {
+    public boolean areUsersFriends(String username1, String username2) throws HTTPException {
         User user1 = getUserFromDB(username1);
         return user1.isFriendsWith(username2);
     }
 
     @Override
-    public Set<UserInfo> getFriendRequestsFor(String username) throws StorageException {
+    public Set<UserInfo> getFriendRequestsFor(String username) throws HTTPException {
         User user = getUserFromDB(username);
         Set<UserInfo> requests = new HashSet<UserInfo>();
         boolean dirty = false;
@@ -143,20 +143,16 @@ public class MongoDBStorageService implements StorageService{
     }
 
     @Override
-    public Set<UserInfo> getFriendsFor(String username) throws StorageException {
+    public Set<UserInfo> getFriendsFor(String username) throws HTTPException {
         User u = getUserFromDB(username);
         return u.getFriends();
     }
 
     @Override
-    public void createFriendship(String frAcceptor, String frSender) throws StorageException, FriendshipException {
+    public void createFriendship(String frAcceptor, String frSender) throws HTTPException {
         User acceptor = getUserFromDB(frAcceptor);
         User sender = null;
-        try {
-            sender = getUserFromDB(frSender);
-        } catch (NoSuchUserException e) {
-            return;
-        }
+        sender = getUserFromDB(frSender);
 
         if (!(acceptor.getFriendRequests().contains(new FriendRequest(frSender, null)))) {
             throw new FriendshipException("No outstanding friend request for users: " + frAcceptor + "<--" + frSender);
@@ -171,7 +167,7 @@ public class MongoDBStorageService implements StorageService{
     }
 
     @Override
-    public void removeFriend(String removerUsername, String removeeUsername) throws StorageException {
+    public void removeFriend(String removerUsername, String removeeUsername) throws HTTPException {
         User remover = getUserFromDB(removerUsername);
         User removee = null;
         try {
@@ -187,7 +183,7 @@ public class MongoDBStorageService implements StorageService{
         updateUser(removee);
     }
 
-    private User getUserFromDB(String username) throws StorageException {
+    private User getUserFromDB(String username) throws HTTPException {
         MongoCollection<Document> coll = database.getCollection(USER_COLLECTION);
         Document userDoc = coll.find(eq("_id", username)).first();
         if (userDoc == null) {
