@@ -142,5 +142,31 @@ public class WebServer
             }
             return "This should never happen :) We promise...";
         });
+
+
+        // gps locations , before and after param
+        // if ignored then obvious what happens
+
+        // [{lat, long, time}]
+
+        get("/api/services/user/:username/location");
+
+
+        //  [{lat, long, time}]
+        put("/api/services/user/:username/location");
+
+
+        // json name, description,   // names of groups not unique, tie guid
+        // response , uuid
+        post("api/services/group/create");
+
+        get("api/services/group/:id/locations");
+
+        get("api/services/group/:id"); //general status
+
+        put("api/services/group/:id/user/:username");
+
+        delete("api/services/group/:id/user/:username");
+
     }
 }
