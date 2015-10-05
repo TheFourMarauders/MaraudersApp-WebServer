@@ -27,10 +27,20 @@ public class AppTest {
     private static ObjectMapper mapper;
 
     @Before
-    public void init() {
+    public void init() throws InterruptedException {
         String[] params = new String[]{"test"};
-        WebServer.main(params);
-        mapper = new ObjectMapper();
+        int attempts = 10;
+        while (attempts-- > 0) {
+            try {
+                WebServer.main(params);
+                mapper = new ObjectMapper();
+                break;
+            } catch (Throwable t) {
+                System.gc();
+                Thread.sleep(100);
+            }
+        }
+
     }
 
     @Test
@@ -190,8 +200,10 @@ public class AppTest {
                 .get("http://localhost:8080/api/services/user/jrossi/groups")
                 .basicAuth("jrossi", "pass")
                 .asString();
-        assertEquals(expectedGroup, res2.getBody());
-        assertEquals(expected, mapper.readValue(res2.getBody(), GroupSchema.class));
+        String res2String = res2.getBody();
+        res2String = res2String.substring(1, res2String.length() - 1);
+        assertEquals(expectedGroup, res2String);
+        assertEquals(expected, mapper.readValue(res2String, GroupSchema.class));
 
         // assert that the group exists and contains jrossi as user
 
@@ -244,5 +256,6 @@ public class AppTest {
     @After
     public void exit() {
         stop();
+        System.gc();
     }
 }

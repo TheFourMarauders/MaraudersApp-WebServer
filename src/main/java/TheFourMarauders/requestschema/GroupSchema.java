@@ -34,4 +34,25 @@ public class GroupSchema {
     public Set<String> getMembers() {
         return new HashSet<>(members);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof GroupSchema)) return false;
+
+        GroupSchema that = (GroupSchema) o;
+
+        if (!get_id().equals(that.get_id())) return false;
+        if (!getName().equals(that.getName())) return false;
+        return getMembers().equals(that.getMembers());
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = get_id().hashCode();
+        result = 31 * result + getName().hashCode();
+        result = 31 * result + getMembers().hashCode();
+        return result;
+    }
 }
