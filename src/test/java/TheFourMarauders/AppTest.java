@@ -1,5 +1,6 @@
 package TheFourMarauders;
 
+import TheFourMarauders.requestschema.GroupSchema;
 import TheFourMarauders.requestschema.UserCreationRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,6 +10,10 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -159,7 +164,41 @@ public class AppTest {
                 .asString();
         assertEquals(200, res.getStatus());
         assertEquals("[]", res.getBody());
+    }
 
+    @Test
+    public void createGroupTest() throws UnirestException, IOException {
+        initFriends();
+
+        /*
+         * Happy path: authorized user creates a group
+         */
+        HttpResponse<String> res = Unirest
+                .post("http://localhost:8080/api/services/group/create?groupname=testgroup")
+                .basicAuth("jrossi", "pass")
+                .asString();
+        assertEquals(200, res.getStatus());
+        assertNotNull(res.getBody());
+
+        // assert that the jrossi account now contains the group id
+        HttpResponse<String> res2 = Unirest
+                .get("http://localhost:8080/api/services/user/jrossi/groups")
+                .basicAuth("jrossi", "pass")
+                .asString();
+        assertEquals("[" + res.getBody() + "]", res2.getBody());
+
+        // assert that the group exists and contains jrossi as user
+        Set<String> usernames = new HashSet<>();
+        usernames.add("jrossi");
+        GroupSchema expected = new GroupSchema(res.getBody(), "testgroup", usernames);
+        String expectedGroup = mapper.writeValueAsString(expected);
+
+        res2 = Unirest
+                .get("http://localhost:8080/api/services/group/" + res.getBody())
+                .basicAuth("jrossi", "pass")
+                .asString();
+        assertEquals(expectedGroup, res2.getBody());
+        assertEquals(expected, mapper.readValue(res2.getBody(), GroupSchema.class));
 
     }
 
