@@ -164,6 +164,7 @@ public class MemoryStorageService implements StorageService {
         Group g = new Group(id, groupName);
         g.addMember(username);
         u.addGroup(id);
+        groups.put(id, g);
         return id;
     }
 
