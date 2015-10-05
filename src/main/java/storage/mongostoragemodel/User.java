@@ -2,11 +2,12 @@ package storage.mongostoragemodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import storage.LocationInfo;
 import storage.UserInfo;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.time.ZonedDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by Joe on 9/7/2015.
@@ -16,6 +17,9 @@ public class User {
     private String hashedPassword;
     private String firstName;
     private String lastName;
+
+    @JsonProperty("locationHistory")
+    private SortedSet<Location> locationHistory;
 
     @JsonProperty("friends")
     private Set<UserInfo> friends;
@@ -34,8 +38,22 @@ public class User {
         this.firstName = firstName;
         this.lastName = lastName;
 
+        this.locationHistory = new TreeSet<>();
         this.friends = new HashSet<>();
         this.friendRequests = new HashSet<>();
+    }
+
+    public List<LocationInfo> getLocationHistory(ZonedDateTime start, ZonedDateTime end) {
+        List<LocationInfo> list = locationHistory.stream()
+                .filter(l -> l.getTime().isBefore(end) && l.getTime().isAfter(start))
+                .map(l -> new LocationInfo(l))
+                .collect(Collectors.toCollection(ArrayList<LocationInfo>::new));
+        Collections.sort(list);
+        return list;
+    }
+
+    public void addLocations(List<LocationInfo> locations) {
+        locations.stream().forEach(l -> locationHistory.add(new Location(l)));
     }
 
     public String get_id() {
@@ -50,32 +68,16 @@ public class User {
         return new HashSet<UserInfo>(friends);
     }
 
-    public void set_id(String _id) {
-        this._id = _id;
-    }
-
     public String getHashedPassword() {
         return hashedPassword;
-    }
-
-    public void setHashedPassword(String hashedPassword) {
-        this.hashedPassword = hashedPassword;
     }
 
     public String getFirstName() {
         return firstName;
     }
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
     public String getLastName() {
         return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
     }
 
     public void addFriend(User u) {

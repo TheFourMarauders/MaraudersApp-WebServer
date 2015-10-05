@@ -12,18 +12,18 @@ import com.mongodb.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoCollection;
 import controller.DatabaseConfig;
-import controller.ServiceController;
 import storage.mongostoragemodel.FriendRequest;
 import storage.mongostoragemodel.User;
 import util.TimeStamp;
 
-import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.ZonedDateTime;
 import java.util.Base64;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 
@@ -181,6 +181,20 @@ public class MongoDBStorageService implements StorageService{
 
         updateUser(remover);
         updateUser(removee);
+    }
+
+    @Override
+    public void addLocationsToUser(String username, List<LocationInfo> locations) throws HTTPException {
+        User u = getUserFromDB(username);
+        u.addLocations(locations);
+        updateUser(u);
+    }
+
+    @Override
+    public List<LocationInfo> getLocationsForUser(String username, ZonedDateTime start, ZonedDateTime end) throws HTTPException {
+        User u = getUserFromDB(username);
+
+        return u.getLocationHistory(start, end);
     }
 
     private User getUserFromDB(String username) throws HTTPException {

@@ -6,6 +6,8 @@ import authentication.HttpBasicAuthService;
 import com.mongodb.Mongo;
 import storage.*;
 
+import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Set;
 
 
@@ -43,27 +45,45 @@ public class ServiceController {
         authService.authenticate(authtoken);
     }
 
-    public void validate(String authtoken, String target) throws HTTPException {
-        authService.validate(authtoken, target);
-    }
-
-    public void sendFriendRequest(String senderUsername, String targetUsername) throws HTTPException {
+    public void sendFriendRequest(String authtoken, String senderUsername, String targetUsername) throws HTTPException {
+        authService.validate(authtoken, senderUsername);
         storageService.insertFriendRequest(senderUsername, targetUsername);
     }
 
-    public Set getFriendRequestsFor(String user) throws HTTPException {
+    public Set getFriendRequestsFor(String authtoken, String user) throws HTTPException {
+        authService.validate(authtoken, user);
         return storageService.getFriendRequestsFor(user);
     }
 
-    public void acceptFriendRequest(String acceptor, String acceptee) throws HTTPException {
+    public void acceptFriendRequest(String authtoken, String acceptor, String acceptee) throws HTTPException {
+        authService.validate(authtoken, acceptor);
         storageService.createFriendship(acceptor, acceptee);
     }
 
-    public void removeFriend(String user, String target) throws HTTPException {
+    public void removeFriend(String authtoken, String user, String target) throws HTTPException {
+        authService.validate(authtoken, user);
         storageService.removeFriend(user, target);
     }
 
-    public Set getFriends(String user) throws HTTPException {
+    public Set getFriends(String authtoken, String user) throws HTTPException {
+        authService.validate(authtoken, user);
         return storageService.getFriendsFor(user);
+    }
+
+    public List getLocationsFor(String authtoken, String user, ZonedDateTime start, ZonedDateTime end) throws HTTPException {
+        authService.validateFriendAccess(authtoken, user);
+        if (start == null) {
+            start = ZonedDateTime.now();
+            start = start.minusYears(start.getYear());
+        }
+        if (end == null) {
+            end = ZonedDateTime.now();
+        }
+        return storageService.getLocationsForUser(user, start, end);
+    }
+
+    public void putLocationsFor(String authtoken, String user, List<LocationInfo> list) throws HTTPException {
+        authService.validate(authtoken, user);
+
     }
 }

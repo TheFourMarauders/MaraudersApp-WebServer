@@ -1,31 +1,30 @@
-package storage.mongostoragemodel;
+package storage;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import storage.LocationInfo;
+import TheFourMarauders.requestschema.LocationRequest;
+import storage.mongostoragemodel.Location;
 
 import java.time.ZonedDateTime;
 
 /**
- * Created by Joe on 9/7/2015.
+ * Created by joe on 10/2/15
  */
-public class Location implements Comparable<Location> {
+public class LocationInfo implements Comparable<LocationInfo> {
 
     private double latitude;
     private double longitude;
     private ZonedDateTime time;
 
-    @JsonCreator
-    public Location(
-            @JsonProperty("latitude") double latitude,
-            @JsonProperty("longitude") double longitude,
-            @JsonProperty("time") ZonedDateTime time) {
+    public LocationInfo(double latitude, double longitude, ZonedDateTime time) {
         this.latitude = latitude;
         this.longitude = longitude;
         this.time = time;
     }
 
-    public Location(LocationInfo l) {
+    public LocationInfo(Location l) {
+        this(l.getLatitude(), l.getLongitude(), l.getTime());
+    }
+
+    public LocationInfo(LocationRequest l) {
         this(l.getLatitude(), l.getLongitude(), l.getTime());
     }
 
@@ -40,24 +39,25 @@ public class Location implements Comparable<Location> {
     public ZonedDateTime getTime() {
         return time;
     }
+
+    @Override
+    public int compareTo(LocationInfo locationInfo) {
+        return time.compareTo(locationInfo.time);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Location location = (Location) o;
+        LocationInfo that = (LocationInfo) o;
 
-        return time.equals(location.time);
+        return time.equals(that.time);
 
     }
 
     @Override
     public int hashCode() {
         return time.hashCode();
-    }
-
-    @Override
-    public int compareTo(Location location) {
-        return this.getTime().compareTo(location.getTime());
     }
 }

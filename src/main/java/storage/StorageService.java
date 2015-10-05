@@ -2,6 +2,8 @@ package storage;
 
 import controller.HTTPException;
 
+import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -24,4 +26,8 @@ public interface StorageService {
     void createFriendship(String frAcceptor, String frSender) throws HTTPException;
 
     void removeFriend(String removerUsername, String removeeUsername) throws HTTPException;
+
+    void addLocationsToUser(String username, List<LocationInfo> locations) throws HTTPException;
+
+    List<LocationInfo> getLocationsForUser(String username, ZonedDateTime before, ZonedDateTime after) throws HTTPException;
 }

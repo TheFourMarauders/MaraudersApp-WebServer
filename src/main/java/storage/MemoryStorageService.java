@@ -2,7 +2,6 @@ package storage;
 
 import controller.AuthConfig;
 import controller.HTTPException;
-import controller.ServiceController;
 import storage.mongostoragemodel.FriendRequest;
 import storage.mongostoragemodel.User;
 import util.TimeStamp;

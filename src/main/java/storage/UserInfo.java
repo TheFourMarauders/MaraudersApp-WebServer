@@ -2,7 +2,6 @@ package storage;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import storage.mongostoragemodel.User;
 
 /**
  * Created by Joe on 9/10/2015.
