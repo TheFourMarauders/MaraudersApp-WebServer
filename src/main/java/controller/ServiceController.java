@@ -1,10 +1,9 @@
 package controller;
 
-import authentication.AuthenticationException;
 import authentication.AuthenticationService;
-import authentication.HttpBasicAuthService;
-import com.mongodb.Mongo;
 import storage.*;
+import storage.datatypes.GroupInfo;
+import storage.datatypes.LocationInfo;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -70,7 +69,7 @@ public class ServiceController {
         return storageService.getFriendsFor(user);
     }
 
-    public List getLocationsFor(String authtoken, String user, ZonedDateTime start, ZonedDateTime end) throws HTTPException {
+    public List<LocationInfo> getLocationsFor(String authtoken, String user, ZonedDateTime start, ZonedDateTime end) throws HTTPException {
         authService.validateFriendAccess(authtoken, user);
         if (start == null) {
             start = ZonedDateTime.now();
@@ -84,6 +83,21 @@ public class ServiceController {
 
     public void putLocationsFor(String authtoken, String user, List<LocationInfo> list) throws HTTPException {
         authService.validate(authtoken, user);
+        storageService.addLocationsToUser(user, list);
 
+    }
+
+    public String createGroup(String authtoken, String groupName) throws HTTPException {
+        return storageService.createGroup(authService.getUsernameFromAuthToken(authtoken), groupName);
+    }
+
+    public Set<GroupInfo> getGroups(String authtoken, String username) throws HTTPException {
+        authService.validate(authtoken, username);
+        return storageService.getGroupsForUser(username);
+    }
+
+    public GroupInfo getGroup(String authtoken, String id) throws HTTPException {
+        authService.validateGroupAccess(authtoken, id);
+        return storageService.getGroupById(id);
     }
 }

@@ -10,5 +10,9 @@ public interface AuthenticationService {
 
     void validateFriendAccess(String authToken, String targetUser) throws HTTPException;
 
+    void validateGroupAccess(String authtoken, String id) throws HTTPException;
+
     void validate(String authToken, String username) throws AuthenticationException;
+
+    String getUsernameFromAuthToken(String authtoken) throws AuthenticationException;
 }

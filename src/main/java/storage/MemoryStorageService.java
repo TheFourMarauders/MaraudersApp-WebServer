@@ -2,6 +2,9 @@ package storage;
 
 import controller.AuthConfig;
 import controller.HTTPException;
+import storage.datatypes.GroupInfo;
+import storage.datatypes.LocationInfo;
+import storage.datatypes.UserInfo;
 import storage.mongostoragemodel.FriendRequest;
 import storage.mongostoragemodel.User;
 import util.TimeStamp;
@@ -9,6 +12,7 @@ import util.TimeStamp;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 /**
@@ -140,5 +144,35 @@ public class MemoryStorageService implements StorageService {
 
         remover.removeFriend(removee);
         removee.removeFriend(remover);
+    }
+
+    @Override
+    public void addLocationsToUser(String username, List<LocationInfo> locations) throws HTTPException {
+
+    }
+
+    @Override
+    public List<LocationInfo> getLocationsForUser(String username, ZonedDateTime before, ZonedDateTime after) throws HTTPException {
+        return null;
+    }
+
+    @Override
+    public String createGroup(String username, String groupName) throws HTTPException {
+        return null;
+    }
+
+    @Override
+    public Set<GroupInfo> getGroupsForUser(String username) throws HTTPException {
+        return null;
+    }
+
+    @Override
+    public GroupInfo getGroupById(String id) throws HTTPException {
+        return null;
+    }
+
+    @Override
+    public boolean isUserInGroup(String username, String groupId) throws HTTPException {
+        return false;
     }
 }

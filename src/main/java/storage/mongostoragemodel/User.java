@@ -2,8 +2,8 @@ package storage.mongostoragemodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import storage.LocationInfo;
-import storage.UserInfo;
+import storage.datatypes.LocationInfo;
+import storage.datatypes.UserInfo;
 
 import java.time.ZonedDateTime;
 import java.util.*;
@@ -27,6 +27,9 @@ public class User {
     @JsonProperty("friendRequest")
     private Set<FriendRequest> friendRequests;
 
+    @JsonProperty("groups")
+    private Set<String> groupIds;
+
     @JsonCreator
     public User(
             @JsonProperty("_id") String _id,
@@ -41,6 +44,7 @@ public class User {
         this.locationHistory = new TreeSet<>();
         this.friends = new HashSet<>();
         this.friendRequests = new HashSet<>();
+        this.groupIds = new HashSet<>();
     }
 
     public List<LocationInfo> getLocationHistory(ZonedDateTime start, ZonedDateTime end) {
@@ -50,6 +54,18 @@ public class User {
                 .collect(Collectors.toCollection(ArrayList<LocationInfo>::new));
         Collections.sort(list);
         return list;
+    }
+
+    public void addGroup(String groupId) {
+        groupIds.add(groupId);
+    }
+
+    public void removeGroup(String groupId) {
+        groupIds.remove(groupId);
+    }
+
+    public Set<String> getGroupIds() {
+        return new HashSet<>(groupIds);
     }
 
     public void addLocations(List<LocationInfo> locations) {

@@ -1,6 +1,5 @@
-package storage;
+package storage.datatypes;
 
-import TheFourMarauders.requestschema.LocationRequest;
 import storage.mongostoragemodel.Location;
 
 import java.time.ZonedDateTime;
@@ -21,10 +20,6 @@ public class LocationInfo implements Comparable<LocationInfo> {
     }
 
     public LocationInfo(Location l) {
-        this(l.getLatitude(), l.getLongitude(), l.getTime());
-    }
-
-    public LocationInfo(LocationRequest l) {
         this(l.getLatitude(), l.getLongitude(), l.getTime());
     }
 

@@ -51,13 +51,19 @@ public class HttpBasicAuthService implements AuthenticationService{
         if(targetUser == null || targetUser.isEmpty()){
             throw new AuthenticationException("Invalid target username", 400);
         }
+        if (!(cred.username.equals(targetUser) || storageService.areUsersFriends(cred.username, targetUser))) {
+            throw new AuthenticationException("Not friend of user", 403);
+        }
+    }
 
-        try {
-            if (!(storageService.areUsersFriends(cred.username, targetUser))) {
-                throw new AuthenticationException("Not friend of user", 403);
-            }
-        } catch (StorageException e) {
-            throw new AuthenticationException("Data retrieval error", 500);
+    @Override
+    public void validateGroupAccess(String authtoken, String groupId) throws HTTPException {
+        Credentials cred = getUsernamePassword(authtoken);
+        if (groupId == null || groupId.isEmpty()) {
+            throw new AuthenticationException("Invalid group id", 400);
+        }
+        if (!storageService.isUserInGroup(cred.username, groupId)) {
+            throw new AuthenticationException("User not in group", 403);
         }
     }
 
@@ -87,6 +93,11 @@ public class HttpBasicAuthService implements AuthenticationService{
         return new Credentials(username, password);
     }
 
+    @Override
+    public String getUsernameFromAuthToken(String authtoken) throws AuthenticationException {
+        return getUsernamePassword(authtoken).getUsername();
+    }
+
     private class Credentials {
         private String username;
         private String password;
@@ -104,5 +115,4 @@ public class HttpBasicAuthService implements AuthenticationService{
             return password;
         }
     }
-
 }

@@ -1,27 +1,25 @@
 package TheFourMarauders;
 
-import TheFourMarauders.requestschema.LocationRequest;
+import TheFourMarauders.requestschema.GroupSchema;
+import TheFourMarauders.requestschema.LocationSchema;
 import TheFourMarauders.requestschema.UserCreationRequest;
-import authentication.AuthenticationException;
-import authentication.AuthenticationService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import controller.HTTPException;
 import controller.ServiceController;
 import controller.ServiceFactory;
-import storage.LocationInfo;
+import storage.datatypes.GroupInfo;
+import storage.datatypes.LocationInfo;
 import util.TimeStamp;
-
-import javax.xml.ws.Service;
 
 import java.net.URLDecoder;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static spark.Spark.get;
 import static spark.Spark.before;
@@ -36,8 +34,12 @@ import static spark.Spark.delete;
  */
 public class WebServer
 {
+    private static ObjectMapper mapper;
 
-    private static AuthenticationService authService;
+    static {
+        mapper = new ObjectMapper();
+        mapper.findAndRegisterModules();
+    }
     public static void main( String[] args )
     {
         ServiceController serviceController2 = null;
@@ -63,7 +65,6 @@ public class WebServer
 
         post("/api/create-user", (req, res) -> {
             try {
-                ObjectMapper mapper = new ObjectMapper();
                 UserCreationRequest r = mapper.readValue(req.body(), UserCreationRequest.class);
                 serviceController.createUser(r.getUsername(), r.getPassword(), r.getFirstName(), r.getLastName());
                 return "Successfully created user: " + r.getUsername() + "\n Welcome to MaraudersApp!";
@@ -97,7 +98,6 @@ public class WebServer
                 String user = req.params(":username");
                 String authtoken = req.headers("Authorization");
 
-                ObjectMapper mapper = new ObjectMapper();
                 String friendReqs = mapper.writeValueAsString(
                         serviceController.getFriendRequestsFor(authtoken, user));
                 res.type("application/json");
@@ -176,8 +176,12 @@ public class WebServer
                 if (endParam != null) {
                     end = TimeStamp.getTimeObject(URLDecoder.decode(endParam, "UTF-8"));
                 }
-                return new ObjectMapper().writeValueAsString(
-                        serviceController.getLocationsFor(authtoken, user, start, end));
+                List<LocationInfo> infoList = serviceController.getLocationsFor(authtoken, user, start, end);
+                List<LocationSchema> schemaList = new ArrayList<>(infoList.size());
+                for (LocationInfo loc : infoList) {
+                    schemaList.add(new LocationSchema(loc.getLatitude(), loc.getLongitude(), loc.getTime().toString()));
+                }
+                return new ObjectMapper().writeValueAsString(schemaList);
             } catch (HTTPException e) {
                 halt(e.getHttpErrorCode(), e.getMessage());
             } catch (DateTimeParseException e) {
@@ -193,17 +197,22 @@ public class WebServer
             try {
                 String user = req.params(":username");
                 String authtoken = req.headers("Authorization");
-                ObjectMapper mapper = new ObjectMapper();
-                List<LocationRequest> list = null;
-                JavaType jt = mapper.getTypeFactory().constructCollectionType(ArrayList.class, LocationRequest.class);
+                List<LocationSchema> list = null;
+                JavaType jt = mapper.getTypeFactory().constructCollectionType(ArrayList.class, LocationSchema.class);
                 list = mapper.readValue(req.body(), jt);
-                List<LocationInfo> infoList = list.stream()
-                        .map(l -> new LocationInfo(l))
-                        .collect(Collectors.toCollection(ArrayList<LocationInfo>::new));
+                List<LocationInfo> infoList = new ArrayList<>();
+                for (LocationSchema r : list) {
+                    infoList.add(
+                            new LocationInfo(r.getLatitude(), r.getLongitude(), TimeStamp.getTimeObject(r.getTime())));
+                }
                 serviceController
                         .putLocationsFor(authtoken, user, infoList);
+                res.status(200);
+                return "Success";
             } catch (HTTPException e) {
                 halt(e.getHttpErrorCode(), e.getMessage());
+            } catch (JsonProcessingException e) {
+                halt(400, "Invalid request schema, see api");
             }
             res.status(500);
             return "This should never happen :) We promise...";
@@ -211,15 +220,65 @@ public class WebServer
 
         // json name, description,   // names of groups not unique, tie guid
         // response , uuid
-        //post("api/services/group/create");
+        post("api/services/group/create", (req, res) -> {
+            String groupId = null;
+            try {
+                String authtoken = req.headers("Authorization");
+                String groupName = req.queryParams("groupname");
+                if (groupName == null || groupName.isEmpty()) {
+                    throw new HTTPException("Bad Request: missing group name", 400);
+                }
+                groupId = serviceController.createGroup(authtoken, groupName);
+            } catch (HTTPException e) {
+                halt(e.getHttpErrorCode(), e.getMessage());
+            }
+            res.status(200);
+            return groupId;
+        });
 
-        //get("api/services/group/:id/locations");
+        get("api/services/user/:username/groups", (req, res) -> {
+            String groups = null;
+            try {
+                String authtoken = req.headers("Authorization");
+                String username = req.params(":username");
+                Set<GroupInfo> infos = serviceController.getGroups(authtoken, username);
+                Set<GroupSchema> groupSchemaSet = new HashSet<>(infos.size());
+                for (GroupInfo info : infos) {
+                    groupSchemaSet.add(new GroupSchema(info.getGroupId(), info.getGroupName(), info.getMembers()));
+                }
+                groups = mapper.writeValueAsString(groupSchemaSet);
+            } catch (HTTPException e) {
+                halt(e.getHttpErrorCode(), e.getMessage());
+            } catch (JsonProcessingException e) {
+                halt(500, "Bad group schema storage :'(");
+            }
+            res.status(200);
+            return groups;
+        });
 
-        //get("api/services/group/:id"); //general status
+        get("api/services/group/:id", (req, res) -> {
+            String group = null;
+            try {
+                String authtoken = req.headers("Authorization");
+                String groupId = req.params(":id");
+                GroupInfo info = serviceController.getGroup(authtoken, groupId);
+                GroupSchema groupSchema = new GroupSchema(info.getGroupId(),
+                        info.getGroupName(), info.getMembers());
+                group = mapper.writeValueAsString(groupSchema);
+            } catch (HTTPException e) {
+                halt(e.getHttpErrorCode(), e.getMessage());
+            } catch (JsonProcessingException e) {
+                halt(500, "Bad group schema storage :'(");
+            }
+            res.status(200);
+            return group;
+        });
 
         //put("api/services/group/:id/user/:username");
 
         //delete("api/services/group/:id/user/:username");
+
+        //get("api/services/group/:id/locations");
 
     }
 }

@@ -12,8 +12,13 @@ import com.mongodb.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoCollection;
 import controller.DatabaseConfig;
+import storage.datatypes.GroupInfo;
+import storage.datatypes.LocationInfo;
+import storage.datatypes.UserInfo;
 import storage.mongostoragemodel.FriendRequest;
+import storage.mongostoragemodel.Group;
 import storage.mongostoragemodel.User;
+import util.GUIDGenerator;
 import util.TimeStamp;
 
 import java.io.IOException;
@@ -40,11 +45,15 @@ public class MongoDBStorageService implements StorageService{
     private static final String USER_COLLECTION = "users";
     private static final String GROUP_COLLECTION = "groups";
 
+    private ObjectMapper mapper;
+
     public MongoDBStorageService(DatabaseConfig dbConfig, AuthConfig authConfig){
         this.dbConfig = dbConfig;
         this.authConfig = authConfig;
         mongoClient = new MongoClient(dbConfig.getURL());
         database = mongoClient.getDatabase(dbConfig.getDbName());
+        mapper = new ObjectMapper();
+        mapper.findAndRegisterModules();
     }
 
     @Override
@@ -77,7 +86,6 @@ public class MongoDBStorageService implements StorageService{
         }
 
         User u = new User(username, encodedHashPass, firstName, lastName);
-        ObjectMapper mapper = new ObjectMapper();
         String userJson = null;
         try {
             userJson = mapper.writeValueAsString(u);
@@ -197,14 +205,96 @@ public class MongoDBStorageService implements StorageService{
         return u.getLocationHistory(start, end);
     }
 
+    @Override
+    public String createGroup(String username, String groupName) throws HTTPException {
+        String groupId = GUIDGenerator.generateGUID();
+        Group g = new Group(groupId, groupName);
+        g.addMember(username);
+
+        MongoCollection<Document> coll = database.getCollection(GROUP_COLLECTION);
+        String json = null;
+        try {
+            json = mapper.writeValueAsString(g);
+        } catch (JsonProcessingException e) {
+            throw new StorageException("Bad Group serialization\n" + e.getMessage());
+        }
+
+        Document groupDoc = Document.parse(json);
+        try {
+            coll.insertOne(groupDoc);
+        } catch (MongoException e) {
+            throw new StorageException("Unable to add to database\n" + e.getMessage());
+        }
+        User u = getUserFromDB(username);
+        u.addGroup(groupId);
+        updateUser(u);
+        return groupId;
+    }
+
+    @Override
+    public Set<GroupInfo> getGroupsForUser(String username) throws HTTPException {
+        User u = getUserFromDB(username);
+        Set<String> groupIds = u.getGroupIds();
+        Set<GroupInfo> groupInfos = new HashSet<>(groupIds.size());
+        for (String id : groupIds) {
+            Group g = getGroupFromDB(id);
+            groupInfos.add(new GroupInfo(g));
+        }
+        return groupInfos;
+    }
+
+    @Override
+    public GroupInfo getGroupById(String id) throws HTTPException {
+        Group g = getGroupFromDB(id);
+        return new GroupInfo(g);
+    }
+
+    @Override
+    public boolean isUserInGroup(String username, String groupId) throws HTTPException {
+        Group g = getGroupFromDB(groupId);
+        return g.getMembers().contains(username);
+    }
+
+
+    private Group getGroupFromDB(String id) throws HTTPException {
+        MongoCollection<Document> coll = database.getCollection(GROUP_COLLECTION);
+        Document groupDoc = coll.find(eq("_id", id)).first();
+        if (groupDoc == null) {
+            throw new HTTPException("No such group", 400);
+        }
+        Group group = null;
+        try {
+            group = mapper.readValue(groupDoc.toJson(), Group.class);
+        } catch (IOException e) {
+            throw new StorageException("Bad Group Serialization\n" + e.getMessage());
+        }
+
+        return group;
+    }
+
+    private void updateGroup(Group g) throws StorageException {
+        MongoCollection<Document> coll = database.getCollection(GROUP_COLLECTION);
+        String json = null;
+        try {
+            json = mapper.writeValueAsString(g);
+        } catch (JsonProcessingException e) {
+            throw new StorageException("Bad Group serialization\n" + e.getMessage());
+        }
+
+        Document updatedGroup = Document.parse(json);
+        try {
+            coll.replaceOne(eq("_id", g.get_id()), updatedGroup);
+        } catch (MongoException e) {
+            throw new StorageException("Unable to add to database\n" + e.getMessage());
+        }
+    }
+
     private User getUserFromDB(String username) throws HTTPException {
         MongoCollection<Document> coll = database.getCollection(USER_COLLECTION);
         Document userDoc = coll.find(eq("_id", username)).first();
         if (userDoc == null) {
             throw new NoSuchUserException("User not found");
         }
-
-        ObjectMapper mapper = new ObjectMapper();
         User user = null;
         try {
             user = mapper.readValue(userDoc.toJson(), User.class);
@@ -218,7 +308,6 @@ public class MongoDBStorageService implements StorageService{
     private void updateUser(User u) throws StorageException {
         MongoCollection<Document> coll = database.getCollection(USER_COLLECTION);
         String json = null;
-        ObjectMapper mapper = new ObjectMapper();
         try {
             json = mapper.writeValueAsString(u);
         } catch (JsonProcessingException e) {

@@ -1,6 +1,9 @@
 package storage;
 
 import controller.HTTPException;
+import storage.datatypes.GroupInfo;
+import storage.datatypes.LocationInfo;
+import storage.datatypes.UserInfo;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -30,4 +33,12 @@ public interface StorageService {
     void addLocationsToUser(String username, List<LocationInfo> locations) throws HTTPException;
 
     List<LocationInfo> getLocationsForUser(String username, ZonedDateTime before, ZonedDateTime after) throws HTTPException;
+
+    String createGroup(String username, String groupName) throws HTTPException;
+
+    Set<GroupInfo> getGroupsForUser(String username) throws HTTPException;
+
+    GroupInfo getGroupById(String id) throws HTTPException;
+
+    boolean isUserInGroup(String username, String groupId) throws HTTPException;
 }

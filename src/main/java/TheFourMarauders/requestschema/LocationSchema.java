@@ -2,23 +2,25 @@ package TheFourMarauders.requestschema;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import controller.HTTPException;
+import util.TimeStamp;
 
 import java.time.ZonedDateTime;
 
 /**
  * Created by joe on 10/2/15.
  */
-public class LocationRequest {
+public class LocationSchema {
 
     private double latitude;
     private double longitude;
-    private ZonedDateTime time;
+    private String time;
 
     @JsonCreator
-    public LocationRequest(
+    public LocationSchema(
             @JsonProperty("latitude") double latitude,
             @JsonProperty("longitude") double longitude,
-            @JsonProperty("utcTime") ZonedDateTime time) {
+            @JsonProperty("time") String time) {
         this.latitude = latitude;
         this.longitude = longitude;
         this.time = time;
@@ -32,7 +34,7 @@ public class LocationRequest {
         return longitude;
     }
 
-    public ZonedDateTime getTime() {
+    public String getTime() {
         return time;
     }
 }

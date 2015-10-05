@@ -1,4 +1,4 @@
-package storage;
+package storage.datatypes;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
