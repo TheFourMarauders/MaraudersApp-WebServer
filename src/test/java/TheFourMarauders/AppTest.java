@@ -29,18 +29,8 @@ public class AppTest {
     @Before
     public void init() throws InterruptedException {
         String[] params = new String[]{"test"};
-        int attempts = 10;
-        while (attempts-- > 0) {
-            try {
-                WebServer.main(params);
-                mapper = new ObjectMapper();
-                break;
-            } catch (Throwable t) {
-                System.gc();
-                Thread.sleep(100);
-            }
-        }
-
+        WebServer.main(params);
+        mapper = new ObjectMapper();
     }
 
     @Test

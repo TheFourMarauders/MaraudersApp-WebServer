@@ -66,21 +66,23 @@ public class WebServer
 
 
         post("/api/create-user", (req, res) -> {
+            String response = "";
             try {
                 UserCreationRequest r = mapper.readValue(req.body(), UserCreationRequest.class);
                 serviceController.createUser(r.getUsername(), r.getPassword(), r.getFirstName(), r.getLastName());
-                return "Successfully created user: " + r.getUsername() + "\n Welcome to MaraudersApp!";
+                response =  "Successfully created user: " + r.getUsername() + "\n Welcome to MaraudersApp!";
             } catch (JsonProcessingException e) {
                 halt(400, "Invalid request schema");
             } catch (HTTPException e) {
                 halt(e.getHttpErrorCode(), e.getMessage());
             }
-            res.status(500);
-            return "This should never happen :) We promise...";
+            res.status(200);
+            return response;
         });
 
         put("/api/services/user/:username/send-friend-request/:targetusername", (req, res) -> {
             //add friend request to target user specified in json
+            String response = "";
             try {
                 String sender = req.params(":username");
                 String target = req.params(":targetusername");
@@ -91,11 +93,12 @@ public class WebServer
             } catch (HTTPException e) {
                 halt(e.getHttpErrorCode(), e.getMessage());
             }
-            res.status(500);
-            return "This should never happen :) We promise...";
+            res.status(200);
+            return response;
         });
 
         get("/api/services/user/:username/incoming-friend-requests", (req, res) -> {
+            String response = "";
             try {
                 String user = req.params(":username");
                 String authtoken = req.headers("Authorization");
@@ -104,42 +107,44 @@ public class WebServer
                         serviceController.getFriendRequestsFor(authtoken, user));
                 res.type("application/json");
                 res.status(200);
-                return friendReqs;
+                response = friendReqs;
             } catch (HTTPException e) {
                 halt(e.getHttpErrorCode(), e.getMessage());
             }
-            res.status(500);
-            return "This should never happen :) We promise...";
+            res.status(200);
+            return response;
         });
 
         put("/api/services/user/:username/accept-friend/:targetfriend", (req, res) -> {
+            String response = "";
             try {
                 String user = req.params(":username");
                 String target = req.params(":targetfriend");
                 String authtoken = req.headers("Authorization");
 
                 serviceController.acceptFriendRequest(authtoken, user, target);
-                return "Successfully added friend: " + target;
+                response = "Successfully added friend: " + target;
             } catch (HTTPException e) {
                 halt(e.getHttpErrorCode(), e.getMessage());
             }
-            res.status(500);
-            return "This should never happen :) We promise...";
+            res.status(200);
+            return response;
         });
 
         delete("/api/services/user/:username/delete-friend/:targetfriend", (req, res) -> {
+            String response = "";
             try {
                 String user = req.params(":username");
                 String target = req.params(":targetfriend");
                 String authtoken = req.headers("Authorization");
 
                 serviceController.deleteFriend(authtoken, user, target);
-                return "Successfully deleted friend: " + target;
+                response =  "Successfully deleted friend: " + target;
             } catch (HTTPException e) {
                 halt(e.getHttpErrorCode(), e.getMessage());
             }
-            res.status(500);
-            return "This should never happen :) We promise...";
+            res.status(200);
+            return response;
         });
 
 
@@ -205,6 +210,7 @@ public class WebServer
 
         //  [{lat, long, time}]
         put("/api/services/user/:username/location", (req, res) -> {
+            String response = "";
             try {
                 String user = req.params(":username");
                 String authtoken = req.headers("Authorization");
@@ -218,15 +224,14 @@ public class WebServer
                 }
                 serviceController
                         .putLocationsFor(authtoken, user, infoList);
-                res.status(200);
-                return "Success";
+                response =  "Success";
             } catch (HTTPException e) {
                 halt(e.getHttpErrorCode(), e.getMessage());
             } catch (JsonProcessingException e) {
                 halt(400, "Invalid request schema, see api");
             }
-            res.status(500);
-            return "This should never happen :) We promise...";
+            res.status(200);
+            return response;
         });
 
         // json name, description,   // names of groups not unique, tie guid
