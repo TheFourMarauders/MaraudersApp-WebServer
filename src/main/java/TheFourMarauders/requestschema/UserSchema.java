@@ -1,24 +1,21 @@
-package storage.datatypes;
+package TheFourMarauders.requestschema;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import storage.mongostoragemodel.User;
 
 /**
- * Created by Joe on 9/10/2015.
+ * Created by joe on 10/5/15.
  */
-public class UserInfo {
-
+public class UserSchema {
     private String username, firstName, lastName;
 
-    public UserInfo( String username, String firstName, String lastName) {
+    @JsonCreator
+    public UserSchema(@JsonProperty("username") String username,
+                    @JsonProperty("firstName") String firstName,
+                    @JsonProperty("lastName") String lastName) {
         this.username = username;
         this.firstName = firstName;
         this.lastName = lastName;
-    }
-
-    public UserInfo(User u) {
-        this(u.get_id(), u.getFirstName(), u.getLastName());
     }
 
     @Override
@@ -26,7 +23,7 @@ public class UserInfo {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        UserInfo userInfo = (UserInfo) o;
+        UserSchema userInfo = (UserSchema) o;
 
         return !(username != null ? !username.equals(userInfo.username) : userInfo.username != null);
 

@@ -153,7 +153,13 @@ public class MongoDBStorageService implements StorageService{
     @Override
     public Set<UserInfo> getFriendsFor(String username) throws HTTPException {
         User u = getUserFromDB(username);
-        return u.getFriends();
+        Set<String> friendIds = u.getFriends();
+        Set<UserInfo> infos = new HashSet<>(friendIds.size());
+        for (String uid : friendIds) {
+            User friend = getUserFromDB(uid);
+            infos.add(new UserInfo(friend));
+        }
+        return infos;
     }
 
     @Override
@@ -167,8 +173,8 @@ public class MongoDBStorageService implements StorageService{
         }
         acceptor.removeFriendRequest(frSender);
 
-        acceptor.addFriend(sender);
-        sender.addFriend(acceptor);
+        acceptor.addFriend(frSender);
+        sender.addFriend(frAcceptor);
 
         updateUser(acceptor);
         updateUser(sender);
@@ -184,8 +190,8 @@ public class MongoDBStorageService implements StorageService{
             return; // muahaha
         }
 
-        remover.removeFriend(removee);
-        removee.removeFriend(remover);
+        remover.removeFriend(removeeUsername);
+        removee.removeFriend(removerUsername);
 
         updateUser(remover);
         updateUser(removee);
@@ -253,6 +259,30 @@ public class MongoDBStorageService implements StorageService{
     public boolean isUserInGroup(String username, String groupId) throws HTTPException {
         Group g = getGroupFromDB(groupId);
         return g.getMembers().contains(username);
+    }
+
+    @Override
+    public void addUserToGroup(String username, String groupId) throws HTTPException {
+        Group g = getGroupFromDB(groupId);
+        g.addMember(username);
+
+        User u = getUserFromDB(username);
+        u.addGroup(groupId);
+
+        updateUser(u);
+        updateGroup(g);
+    }
+
+    @Override
+    public void removeUserFromGroup(String username, String groupId) throws HTTPException {
+        Group g = getGroupFromDB(groupId);
+        g.removeMember(username);
+
+        User u = getUserFromDB(username);
+        u.removeGroup(groupId);
+
+        updateUser(u);
+        updateGroup(g);
     }
 
 

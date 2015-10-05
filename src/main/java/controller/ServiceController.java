@@ -59,7 +59,7 @@ public class ServiceController {
         storageService.createFriendship(acceptor, acceptee);
     }
 
-    public void removeFriend(String authtoken, String user, String target) throws HTTPException {
+    public void deleteFriend(String authtoken, String user, String target) throws HTTPException {
         authService.validate(authtoken, user);
         storageService.removeFriend(user, target);
     }
@@ -99,5 +99,16 @@ public class ServiceController {
     public GroupInfo getGroup(String authtoken, String id) throws HTTPException {
         authService.validateGroupAccess(authtoken, id);
         return storageService.getGroupById(id);
+    }
+
+    public void putUserInGroup(String authtoken, String userToAdd, String groupId) throws HTTPException {
+        authService.validateFriendAccess(authtoken, userToAdd);
+        authService.validateGroupAccess(authtoken, groupId);
+        storageService.addUserToGroup(userToAdd, groupId);
+    }
+
+    public void deleteUserFromGroup(String authtoken, String userToRemove, String groupId) throws HTTPException {
+        authService.validateGroupAccess(authtoken, groupId);
+        storageService.removeUserFromGroup(userToRemove, groupId);
     }
 }

@@ -20,17 +20,17 @@ import java.util.*;
  */
 public class MemoryStorageService implements StorageService {
 
-    private Map<String, User> storage;
+    private Map<String, User> users;
     private AuthConfig authConfig;
 
     public MemoryStorageService(AuthConfig authConfig) {
         this.authConfig = authConfig;
-        storage = new HashMap<>();
+        users = new HashMap<>();
     }
 
     @Override
     public byte[] getHashedPassword(String username) throws HTTPException {
-        User u = storage.get(username);
+        User u = users.get(username);
         if (u == null) {
             throw new NoSuchUserException(username);
         }
@@ -39,7 +39,7 @@ public class MemoryStorageService implements StorageService {
 
     @Override
     public void createUser(String username, String password, String firstName, String lastName) throws HTTPException {
-        if (storage.get(username) != null) throw new UserAlreadyExistsException();
+        if (users.get(username) != null) throw new UserAlreadyExistsException();
         String encodedHashPass = null;
         try {
             MessageDigest digest = MessageDigest.getInstance(authConfig.getHashAlgo());
@@ -49,13 +49,13 @@ public class MemoryStorageService implements StorageService {
             throw new HTTPException("Critical server error :(", 500);
         }
         User u = new User(username, encodedHashPass, firstName, lastName);
-        storage.put(username, u);
+        users.put(username, u);
     }
 
     @Override
     public void insertFriendRequest(String senderUsername, String targetUsername) throws HTTPException {
-        User sender = storage.get(senderUsername);
-        User target = storage.get(targetUsername);
+        User sender = users.get(senderUsername);
+        User target = users.get(targetUsername);
 
         if (sender == null || target == null) {
             throw new NoSuchUserException((sender==null) ? senderUsername : targetUsername);
@@ -75,13 +75,13 @@ public class MemoryStorageService implements StorageService {
 
     @Override
     public boolean areUsersFriends(String username1, String username2) throws StorageException {
-        User user1 = storage.get(username1);
+        User user1 = users.get(username1);
         return user1.isFriendsWith(username2);
     }
 
     @Override
     public Set<UserInfo> getFriendRequestsFor(String username) throws HTTPException {
-        User user = storage.get(username);
+        User user = users.get(username);
         if (user == null) {
             throw new NoSuchUserException(username);
         }
@@ -89,7 +89,7 @@ public class MemoryStorageService implements StorageService {
 
         for (FriendRequest fr : user.getFriendRequests()) {
             try {
-                User requester = storage.get(fr.getSenderUsername());
+                User requester = users.get(fr.getSenderUsername());
                 if (requester == null) throw new NoSuchUserException(fr.getSenderUsername());
                 UserInfo requesterInfo =
                         new UserInfo(requester.get_id(), requester.getFirstName(), requester.getLastName());
@@ -104,18 +104,24 @@ public class MemoryStorageService implements StorageService {
 
     @Override
     public Set<UserInfo> getFriendsFor(String username) throws HTTPException {
-        User u = storage.get(username);
+        User u = users.get(username);
         if (u == null) throw new NoSuchUserException(username);
-        return u.getFriends();
+        Set<String> friendIds = u.getFriends();
+        Set<UserInfo> infos = new HashSet<>(friendIds.size());
+        for (String uid : friendIds) {
+            User friend = users.get(uid);
+            infos.add(new UserInfo(friend));
+        }
+        return infos;
     }
 
     @Override
     public void createFriendship(String frAcceptor, String frSender) throws HTTPException {
-        User acceptor = storage.get(frAcceptor);
+        User acceptor = users.get(frAcceptor);
         if (acceptor == null) throw new NoSuchUserException(frAcceptor);
         User sender = null;
         try {
-            sender = storage.get(frSender);
+            sender = users.get(frSender);
             if (sender == null) throw new NoSuchUserException(frSender);
         } catch (NoSuchUserException e) {
             return;
@@ -126,24 +132,24 @@ public class MemoryStorageService implements StorageService {
         }
         acceptor.removeFriendRequest(frSender);
 
-        acceptor.addFriend(sender);
-        sender.addFriend(acceptor);
+        acceptor.addFriend(frSender);
+        sender.addFriend(frAcceptor);
     }
 
     @Override
     public void removeFriend(String removerUsername, String removeeUsername) throws HTTPException {
-        User remover = storage.get(removerUsername);
+        User remover = users.get(removerUsername);
         if (remover == null) throw new NoSuchUserException(removerUsername);
         User removee = null;
         try {
-            removee = storage.get(removeeUsername);
+            removee = users.get(removeeUsername);
             if (removee == null) throw new NoSuchUserException(removeeUsername);
         } catch (NoSuchUserException e) {
             return; // muahaha
         }
 
-        remover.removeFriend(removee);
-        removee.removeFriend(remover);
+        remover.removeFriend(removeeUsername);
+        removee.removeFriend(removerUsername);
     }
 
     @Override
@@ -174,5 +180,15 @@ public class MemoryStorageService implements StorageService {
     @Override
     public boolean isUserInGroup(String username, String groupId) throws HTTPException {
         return false;
+    }
+
+    @Override
+    public void addUserToGroup(String username, String groupId) throws HTTPException {
+
+    }
+
+    @Override
+    public void removeUserFromGroup(String username, String groupId) throws HTTPException {
+
     }
 }

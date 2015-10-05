@@ -22,7 +22,7 @@ public class User {
     private SortedSet<Location> locationHistory;
 
     @JsonProperty("friends")
-    private Set<UserInfo> friends;
+    private Set<String> friends;
 
     @JsonProperty("friendRequest")
     private Set<FriendRequest> friendRequests;
@@ -80,8 +80,8 @@ public class User {
         return new HashSet<FriendRequest>(friendRequests);
     }
 
-    public Set<UserInfo> getFriends() {
-        return new HashSet<UserInfo>(friends);
+    public Set<String> getFriends() {
+        return new HashSet<String>(friends);
     }
 
     public String getHashedPassword() {
@@ -96,20 +96,16 @@ public class User {
         return lastName;
     }
 
-    public void addFriend(User u) {
-        friends.add(new UserInfo(u.get_id(), u.getFirstName(), u.getLastName()));
+    public void addFriend(String u) {
+        friends.add(u);
     }
 
-    public void removeFriend(User u) {
-        friends.remove(new UserInfo(u.get_id(), u.getFirstName(), u.getLastName()));
+    public void removeFriend(String u) {
+        friends.remove(u);
     }
 
-    public boolean isFriendsWith(User u) {
+    public boolean isFriendsWith(String u) {
         return friends.contains(u);
-    }
-
-    public boolean isFriendsWith(String username) {
-        return isFriendsWith(new User(username, "", "", ""));
     }
 
     public void addFriendRequest(FriendRequest fr) {

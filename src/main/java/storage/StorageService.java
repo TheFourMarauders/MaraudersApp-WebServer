@@ -41,4 +41,8 @@ public interface StorageService {
     GroupInfo getGroupById(String id) throws HTTPException;
 
     boolean isUserInGroup(String username, String groupId) throws HTTPException;
+
+    void addUserToGroup(String username, String groupId) throws HTTPException;
+
+    void removeUserFromGroup(String username, String groupId) throws HTTPException;
 }

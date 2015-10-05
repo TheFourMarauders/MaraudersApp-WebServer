@@ -3,6 +3,7 @@ package TheFourMarauders;
 import TheFourMarauders.requestschema.GroupSchema;
 import TheFourMarauders.requestschema.LocationSchema;
 import TheFourMarauders.requestschema.UserCreationRequest;
+import TheFourMarauders.requestschema.UserSchema;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,6 +12,7 @@ import controller.ServiceController;
 import controller.ServiceFactory;
 import storage.datatypes.GroupInfo;
 import storage.datatypes.LocationInfo;
+import storage.datatypes.UserInfo;
 import util.TimeStamp;
 
 import java.net.URLDecoder;
@@ -131,7 +133,7 @@ public class WebServer
                 String target = req.params(":targetfriend");
                 String authtoken = req.headers("Authorization");
 
-                serviceController.removeFriend(authtoken, user, target);
+                serviceController.deleteFriend(authtoken, user, target);
                 return "Successfully deleted friend: " + target;
             } catch (HTTPException e) {
                 halt(e.getHttpErrorCode(), e.getMessage());
@@ -142,18 +144,25 @@ public class WebServer
 
 
         get("/api/services/user/:username/friends", (req, res) -> {
+            String friends = null;
             try {
                 String user = req.params(":username");
                 String authtoken = req.headers("Authorization");
 
+                Set<UserInfo> infos = serviceController.getFriends(authtoken, user);
+                Set<UserSchema> userSchemas = new HashSet<>(infos.size());
+                for (UserInfo info : infos) {
+                    userSchemas.add(new UserSchema(info.getUsername(), info.getFirstName(), info.getLastName()));
+                }
                 res.type("application/json");
-                res.status(200);
-                return new ObjectMapper().writeValueAsString(serviceController.getFriends(authtoken, user));
+                friends = mapper.writeValueAsString(userSchemas);
             } catch (HTTPException e) {
                 halt(e.getHttpErrorCode(), e.getMessage());
+            } catch (JsonProcessingException e) {
+                halt(500, "Bad user schema storage :'(");
             }
-            res.status(500);
-            return "This should never happen :) We promise...";
+            res.status(200);
+            return friends;
         });
 
         // gps locations , before and after param
@@ -163,13 +172,14 @@ public class WebServer
 
         // /api/services/user/:username/location?start=10:01:00+01010&end=100101001
         get("/api/services/user/:username/location", (req, res) -> {
+            String user = req.params(":username");
+            String authtoken = req.headers("Authorization");
+            String startParam = req.queryParams("start");
+            String endParam = req.queryParams("end");
+            ZonedDateTime start = null;
+            ZonedDateTime end = null;
+            String locations = null;
             try {
-                String user = req.params(":username");
-                String authtoken = req.headers("Authorization");
-                String startParam = req.queryParams("start");
-                String endParam = req.queryParams("end");
-                ZonedDateTime start = null;
-                ZonedDateTime end = null;
                 if (startParam != null) {
                     start = TimeStamp.getTimeObject(URLDecoder.decode(startParam, "UTF-8"));
                 }
@@ -181,14 +191,15 @@ public class WebServer
                 for (LocationInfo loc : infoList) {
                     schemaList.add(new LocationSchema(loc.getLatitude(), loc.getLongitude(), loc.getTime().toString()));
                 }
-                return new ObjectMapper().writeValueAsString(schemaList);
+                res.type("application/json");
+                locations = mapper.writeValueAsString(schemaList);
             } catch (HTTPException e) {
                 halt(e.getHttpErrorCode(), e.getMessage());
             } catch (DateTimeParseException e) {
                 halt(400, "Bad timestamp string");
             }
-            res.status(500);
-            return "This should never happen :) We promise...";
+            res.status(200);
+            return locations;
         });
 
 
@@ -274,9 +285,31 @@ public class WebServer
             return group;
         });
 
-        //put("api/services/group/:id/user/:username");
+        put("api/services/group/:id/user/:username", (req, res) -> {
+            String authtoken = req.headers("Authorization");
+            String userToAdd = req.params(":username");
+            String groupId = req.params(":id");
+            try {
+                serviceController.putUserInGroup(authtoken, userToAdd, groupId);
+            } catch (HTTPException e) {
+                halt(e.getHttpErrorCode(), e.getMessage());
+            }
+            res.status(200);
+            return "Successfully added user to group";
+        });
 
-        //delete("api/services/group/:id/user/:username");
+        delete("api/services/group/:id/user/:username", (req, res) -> {
+            String authtoken = req.headers("Authorization");
+            String userToRemove = req.params(":usernam");
+            String groupId = req.params(":id");
+            try {
+                serviceController.deleteUserFromGroup(authtoken, userToRemove, groupId);
+            } catch (HTTPException e) {
+                halt(e.getHttpErrorCode(), e.getMessage());
+            }
+            res.status(200);
+            return "Successfully added user to group";
+        });
 
         //get("api/services/group/:id/locations");
 
