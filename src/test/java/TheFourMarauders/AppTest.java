@@ -180,18 +180,20 @@ public class AppTest {
         assertEquals(200, res.getStatus());
         assertNotNull(res.getBody());
 
+
+        Set<String> usernames = new HashSet<>();
+        usernames.add("jrossi");
+        GroupSchema expected = new GroupSchema(res.getBody(), "testgroup", usernames);
+        String expectedGroup = mapper.writeValueAsString(expected);
         // assert that the jrossi account now contains the group id
         HttpResponse<String> res2 = Unirest
                 .get("http://localhost:8080/api/services/user/jrossi/groups")
                 .basicAuth("jrossi", "pass")
                 .asString();
-        assertEquals("[" + res.getBody() + "]", res2.getBody());
+        assertEquals(expectedGroup, res2.getBody());
+        assertEquals(expected, mapper.readValue(res2.getBody(), GroupSchema.class));
 
         // assert that the group exists and contains jrossi as user
-        Set<String> usernames = new HashSet<>();
-        usernames.add("jrossi");
-        GroupSchema expected = new GroupSchema(res.getBody(), "testgroup", usernames);
-        String expectedGroup = mapper.writeValueAsString(expected);
 
         res2 = Unirest
                 .get("http://localhost:8080/api/services/group/" + res.getBody())
