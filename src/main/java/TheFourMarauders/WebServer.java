@@ -18,10 +18,7 @@ import util.TimeStamp;
 import java.net.URLDecoder;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static spark.Spark.get;
 import static spark.Spark.before;
@@ -305,7 +302,7 @@ public class WebServer
 
         delete("api/services/group/:id/user/:username", (req, res) -> {
             String authtoken = req.headers("Authorization");
-            String userToRemove = req.params(":usernam");
+            String userToRemove = req.params(":username");
             String groupId = req.params(":id");
             try {
                 serviceController.deleteUserFromGroup(authtoken, userToRemove, groupId);
@@ -313,10 +310,43 @@ public class WebServer
                 halt(e.getHttpErrorCode(), e.getMessage());
             }
             res.status(200);
-            return "Successfully added user to group";
+            return "Successfully deleted user from group";
         });
 
-        //get("api/services/group/:id/locations");
-
+        get("api/services/group/:id/locations", (req, res) -> {
+            String authtoken = req.headers("Authorization");
+            String groupId = req.params(":id");
+            String startParam = req.queryParams("start");
+            String endParam = req.queryParams("end");
+            ZonedDateTime start = null, end = null;
+            String locations = "";
+            try {
+                if (startParam != null) {
+                    start = TimeStamp.getTimeObject(URLDecoder.decode(startParam, "UTF-8"));
+                }
+                if (endParam != null) {
+                    end = TimeStamp.getTimeObject(URLDecoder.decode(endParam, "UTF-8"));
+                }
+                Map<String, List<LocationInfo>> locationMap
+                        = serviceController.getLocationsForGroup(authtoken, groupId, start, end);
+                Map<String, List<LocationSchema>> locationResMap
+                        = new HashMap<>();
+                for (String uid : locationMap.keySet()) {
+                    List<LocationInfo> locInfos = locationMap.get(uid);
+                    List<LocationSchema> locSchemas = new ArrayList<>(locInfos.size());
+                    for (LocationInfo l : locInfos) {
+                        locSchemas.add(new LocationSchema(l.getLatitude(), l.getLongitude(), l.getTime().toString()));
+                    }
+                    locationResMap.put(uid, locSchemas);
+                }
+                locations = mapper.writeValueAsString(locationResMap);
+            } catch (HTTPException e) {
+                halt(e.getHttpErrorCode(), e.getMessage());
+            } catch (JsonProcessingException e) {
+                halt(500, "Location map serialization error :'(");
+            }
+            res.status(200);
+            return locations;
+        });
     }
 }

@@ -47,9 +47,9 @@ public class User {
         this.groupIds = new HashSet<>();
     }
 
-    public List<LocationInfo> getLocationHistory(ZonedDateTime before, ZonedDateTime after) {
+    public List<LocationInfo> getLocationHistory(ZonedDateTime start, ZonedDateTime end) {
         List<LocationInfo> list = locationHistory.stream()
-                .filter(l -> l.getTime().isBefore(before) && l.getTime().isAfter(after))
+                .filter(l -> l.getTime().isBefore(end) && l.getTime().isAfter(start))
                 .map(l -> new LocationInfo(l))
                 .collect(Collectors.toCollection(ArrayList<LocationInfo>::new));
         Collections.sort(list);

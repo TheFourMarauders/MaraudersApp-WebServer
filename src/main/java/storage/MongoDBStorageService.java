@@ -276,6 +276,9 @@ public class MongoDBStorageService implements StorageService{
     @Override
     public void removeUserFromGroup(String username, String groupId) throws HTTPException {
         Group g = getGroupFromDB(groupId);
+        if (!g.getMembers().contains(username)) {
+            throw new HTTPException("User not in group", 200);
+        }
         g.removeMember(username);
 
         User u = getUserFromDB(username);

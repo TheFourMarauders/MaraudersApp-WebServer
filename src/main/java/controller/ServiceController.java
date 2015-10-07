@@ -6,8 +6,7 @@ import storage.datatypes.GroupInfo;
 import storage.datatypes.LocationInfo;
 
 import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 
 /**
@@ -46,6 +45,9 @@ public class ServiceController {
 
     public void sendFriendRequest(String authtoken, String senderUsername, String targetUsername) throws HTTPException {
         authService.validate(authtoken, senderUsername);
+        if (senderUsername.equals(targetUsername)) {
+            throw new HTTPException("You are already your own best friend :)", 200);
+        }
         storageService.insertFriendRequest(senderUsername, targetUsername);
     }
 
@@ -110,5 +112,22 @@ public class ServiceController {
     public void deleteUserFromGroup(String authtoken, String userToRemove, String groupId) throws HTTPException {
         authService.validateGroupAccess(authtoken, groupId);
         storageService.removeUserFromGroup(userToRemove, groupId);
+    }
+
+    public Map<String, List<LocationInfo>> getLocationsForGroup(String authtoken, String groupId, ZonedDateTime start,
+                                                                ZonedDateTime end) throws HTTPException {
+        authService.validateGroupAccess(authtoken, groupId);
+        Map<String, List<LocationInfo>> locationMap = new HashMap<>();
+        GroupInfo group = storageService.getGroupById(groupId);
+        for (String uid : group.getMembers()) {
+            List<LocationInfo> locations = null;
+            try {
+                locations = getLocationsFor(authtoken, uid, start, end);
+            } catch (HTTPException e) {
+                locations = new ArrayList<>();
+            }
+            locationMap.put(uid, locations);
+        }
+        return locationMap;
     }
 }
