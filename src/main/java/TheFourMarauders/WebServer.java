@@ -7,6 +7,7 @@ import TheFourMarauders.requestschema.UserSchema;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.connection.Server;
 import controller.HTTPException;
 import controller.ServiceController;
 import controller.ServiceFactory;
@@ -15,6 +16,9 @@ import storage.datatypes.LocationInfo;
 import storage.datatypes.UserInfo;
 import util.TimeStamp;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URLDecoder;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
@@ -39,18 +43,30 @@ public class WebServer
         mapper = new ObjectMapper();
         mapper.findAndRegisterModules();
     }
-    public static void main( String[] args )
-    {
-        ServiceController serviceController2 = null;
-        if (args.length > 0 && args[0].equals("test")) {
-            serviceController2 = new ServiceFactory().buildLocal();
-        } else {
-            serviceController2 = new ServiceFactory().build();
+    public static void main( String[] args ) {
+        ServerConfig config = null;
+        if (args.length > 0 || !args[0].isEmpty()) {
+            try {
+                config = mapper.readValue(new File(args[0]), ServerConfig.class);
+            } catch (JsonProcessingException e) {
+                System.out.println("Config contains invalid json schema");
+                e.printStackTrace();
+                System.exit(0);
+            } catch (IOException e) {
+                System.out.println("Error reading file " + args[0]);
+                e.printStackTrace();
+                System.exit(0);
+            }
         }
-        ServiceController serviceController = serviceController2;
+
+        if (args.length == 2) {
+            config.setPort(Integer.parseInt(args[1]));
+        }
+
+        ServiceController serviceController = new ServiceFactory().build(config);
         //Load config
-        spark.Spark.port(8080);
-        //spark.Spark.threadPool(Runtime.getRuntime().availableProcessors());
+        spark.Spark.port(config.getPort());
+        //spark.Spark.threadPool(config.getMaxThreads());
 
         //Authentication it is done through before
         before("/api/services/*", (req, res) -> {

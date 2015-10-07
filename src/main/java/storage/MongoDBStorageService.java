@@ -5,13 +5,14 @@ import static com.mongodb.client.model.Filters.eq;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoException;
+import com.mongodb.ServerAddress;
 import controller.AuthConfig;
 import controller.HTTPException;
 import org.bson.Document;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoCollection;
-import controller.DatabaseConfig;
+import controller.StorageConfig;
 import storage.datatypes.GroupInfo;
 import storage.datatypes.LocationInfo;
 import storage.datatypes.UserInfo;
@@ -26,10 +27,8 @@ import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.ZonedDateTime;
-import java.util.Base64;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -39,7 +38,7 @@ public class MongoDBStorageService implements StorageService{
     private MongoClient mongoClient;
     private MongoDatabase database;
 
-    private DatabaseConfig dbConfig;
+    private StorageConfig dbConfig;
     private AuthConfig authConfig;
 
     private static final String USER_COLLECTION = "users";
@@ -47,10 +46,14 @@ public class MongoDBStorageService implements StorageService{
 
     private ObjectMapper mapper;
 
-    public MongoDBStorageService(DatabaseConfig dbConfig, AuthConfig authConfig){
+    public MongoDBStorageService(StorageConfig dbConfig, AuthConfig authConfig){
         this.dbConfig = dbConfig;
         this.authConfig = authConfig;
-        mongoClient = new MongoClient(dbConfig.getURL());
+        List<ServerAddress> addresses = dbConfig.getURLS()
+                .stream()
+                .map(s -> new ServerAddress(s))
+                .collect(Collectors.toCollection(ArrayList<ServerAddress>::new));
+        mongoClient = new MongoClient(addresses);
         database = mongoClient.getDatabase(dbConfig.getDbName());
         mapper = new ObjectMapper();
         mapper.findAndRegisterModules();

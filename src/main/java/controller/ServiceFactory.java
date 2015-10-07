@@ -1,5 +1,6 @@
 package controller;
 
+import TheFourMarauders.ServerConfig;
 import authentication.AuthenticationService;
 import authentication.HttpBasicAuthService;
 import storage.MemoryStorageService;
@@ -11,30 +12,32 @@ import storage.StorageService;
  */
 public class ServiceFactory {
 
-    public ServiceController buildLocal() {
-        AuthConfig authConfig = new AuthConfig();
-        StorageService storageService = new MemoryStorageService(authConfig);
-        AuthenticationService authService = new HttpBasicAuthService(authConfig, storageService);
-
-        ServiceController sc = new ServiceController(authService, storageService);
-
-        return sc;
-    }
-
     public ServiceController build() {
-        return build(new AuthConfig(), new DatabaseConfig());
+        return build(new AuthConfig(), new StorageConfig());
     }
 
-    public ServiceController build(DatabaseConfig dbConfig) {
+    public ServiceController build(StorageConfig dbConfig) {
         return build(new AuthConfig(), dbConfig);
     }
 
-    public ServiceController build(AuthConfig authConfig, DatabaseConfig dbConfig) {
-        StorageService storageService = new MongoDBStorageService(dbConfig, authConfig);
+    public ServiceController build(AuthConfig authConfig, StorageConfig dbConfig) {
+        StorageService storageService = null;
+        if (dbConfig.getType().equalsIgnoreCase("mem")) {
+            storageService = new MemoryStorageService(authConfig);
+        } else if (dbConfig.getType().equalsIgnoreCase("mongo")) {
+            storageService = new MongoDBStorageService(dbConfig, authConfig);
+        }
         AuthenticationService authService = new HttpBasicAuthService(authConfig, storageService);
 
         ServiceController sc = new ServiceController(authService, storageService);
 
         return sc;
+    }
+
+    public ServiceController build(ServerConfig conf) {
+        if (conf == null) {
+            return build();
+        }
+        return build(conf.getAuthConfig(), conf.getStorageConfig());
     }
 }
