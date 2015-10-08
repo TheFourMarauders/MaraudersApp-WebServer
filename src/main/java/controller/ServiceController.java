@@ -78,7 +78,7 @@ public class ServiceController {
             start = start.minusYears(start.getYear());
         }
         if (end == null) {
-            end = ZonedDateTime.now();
+            end = ZonedDateTime.now().plusDays(1);
         }
         return storageService.getLocationsForUser(user, start, end);
     }

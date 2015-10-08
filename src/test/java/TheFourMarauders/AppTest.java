@@ -1,8 +1,11 @@
 package TheFourMarauders;
 
 import TheFourMarauders.requestschema.GroupSchema;
+import TheFourMarauders.requestschema.LocationSchema;
 import TheFourMarauders.requestschema.UserCreationRequest;
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
@@ -12,11 +15,16 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static spark.Spark.stop;
 
 /**
@@ -173,7 +181,7 @@ public class AppTest {
         assertEquals("[]", res.getBody());
     }
 
-    //@Test
+    @Test
     public void createGroupTest() throws UnirestException, IOException {
         initFriends();
 
@@ -213,6 +221,122 @@ public class AppTest {
 
     }
 
+
+    @Test
+    public void testGPSCoordinatesForAndAuthenticatedUser()
+            throws UnirestException, IOException {
+        initUsers();
+
+        LocationSchema loc1 = new LocationSchema(44, 444, ZonedDateTime.now().toString());
+        LocationSchema loc2 = new LocationSchema(45, 445, ZonedDateTime.now().plusMinutes(1).toString());
+        List<LocationSchema> list = new ArrayList<>(2);
+        list.add(loc1);
+        list.add(loc2);
+
+        HttpResponse<String> res = Unirest
+                .put("http://localhost:" + port + "/api/services/user/jrossi/locations")
+                .basicAuth("jrossi", "pass")
+                .body(mapper.writeValueAsString(list))
+                .asString();
+        assertEquals(200, res.getStatus());
+
+        res = Unirest
+                .get("http://localhost:" + port + "/api/services/user/jrossi/locations")
+                .basicAuth("jrossi", "pass")
+                .asString();
+        assertEquals(200, res.getStatus());
+
+        JavaType jt = mapper.getTypeFactory().constructCollectionType(ArrayList.class, LocationSchema.class);
+        List<LocationSchema> resList = mapper.readValue(res.getBody(), jt);
+        assertEquals(list.size(), resList.size());
+        assertEquals(loc1, resList.get(0));
+        assertEquals(loc2, resList.get(1));
+
+        res = Unirest
+                .get("http://localhost:" + port + "/api/services/user/jrossi/locations")
+                .basicAuth("mgruchacz", "pass")
+                .asString();
+        assertEquals(403, res.getStatus());
+
+        beFriendsNow();
+
+        res = Unirest
+                .get("http://localhost:" + port + "/api/services/user/jrossi/locations")
+                .basicAuth("mgruchacz", "pass")
+                .asString();
+        assertEquals(200, res.getStatus());
+    }
+
+    @Test
+    public void testInvalidPutLocationMethodRequest() throws UnirestException, JsonProcessingException {
+        initFriends();
+        LocationSchema loc1 = new LocationSchema(44, 444, ZonedDateTime.now().format(DateTimeFormatter.RFC_1123_DATE_TIME));
+        LocationSchema loc2 = new LocationSchema(45, 445, ZonedDateTime.now().plusMinutes(1)
+                .format(DateTimeFormatter.RFC_1123_DATE_TIME));
+        List<LocationSchema> list = new ArrayList<>(2);
+        list.add(loc1);
+        list.add(loc2);
+
+        HttpResponse<String> res = Unirest
+                .put("http://localhost:" + port + "/api/services/user/jrossi/locations")
+                .basicAuth("jrossi", "pass")
+                .body(mapper.writeValueAsString(list))
+                .asString();
+        assertEquals(400, res.getStatus());
+    }
+
+    @Test
+    public void groupManagementTest() throws UnirestException, IOException {
+        initUsers();
+        String guid = createGroup();
+
+        HttpResponse<String> res = Unirest
+                .put("http://localhost:" + port + "/api/services/group/" + guid + "/user/mgruchacz")
+                .basicAuth("jrossi", "pass")
+                .asString();
+        assertEquals(403, res.getStatus());
+
+        beFriendsNow();
+
+        res = Unirest
+                .put("http://localhost:" + port + "/api/services/group/" + guid + "/user/mgruchacz")
+                .basicAuth("jrossi", "pass")
+                .asString();
+        assertEquals(200, res.getStatus());
+
+        res = Unirest
+                .put("http://localhost:" + port + "/api/services/group/" + guid.replaceAll("-", "%") + "/user/mgruchacz")
+                .basicAuth("jrossi", "pass")
+                .asString();
+        assertEquals(400, res.getStatus());
+
+        res = Unirest
+                .put("http://localhost:" + port + "/api/services/group/" + guid + "/user/csimpkins")
+                .basicAuth("jrossi", "pass")
+                .asString();
+        assertEquals(403, res.getStatus());
+
+        res = Unirest
+                .delete("http://localhost:" + port + "/api/services/group/" + guid + "/user/mgruchacz")
+                .basicAuth("jrossi", "pass")
+                .asString();
+        assertEquals(200, res.getStatus());
+
+        res = Unirest
+                .get("http://localhost:" + port + "/api/services/group/" + guid)
+                .basicAuth("jrossi", "pass")
+                .asString();
+        assertEquals(200, res.getStatus());
+        assertTrue(mapper.readValue(res.getBody(), GroupSchema.class).getMembers().contains("jrossi"));
+        assertEquals(1, mapper.readValue(res.getBody(), GroupSchema.class).getMembers().size());
+
+        res = Unirest
+                .delete("http://localhost:" + port + "/api/services/group/" + guid.replaceAll("-", "%") + "/user/jrossi")
+                .basicAuth("jrossi", "pass")
+                .asString();
+        assertEquals(400, res.getStatus());
+    }
+
     private void initUsers() throws UnirestException {
         String creationJson = "";
         String creationJson2 = "";
@@ -250,10 +374,33 @@ public class AppTest {
                 .asString();
     }
 
+    private void beFriendsNow() throws UnirestException {
+        Unirest.put("http://localhost:" + port + "/api/services/user/jrossi/send-friend-request/mgruchacz")
+                .basicAuth("jrossi", "pass")
+                .asString();
+        Unirest.get("http://localhost:" + port + "/api/services/user/mgruchacz/incoming-friend-requests")
+                .basicAuth("mgruchacz", "pass")
+                .asString();
+        Unirest.put("http://localhost:" + port + "/api/services/user/mgruchacz/accept-friend/jrossi")
+                .basicAuth("mgruchacz", "pass")
+                .asString();
+        Unirest.get("http://localhost:" + port + "/api/services/user/jrossi/friends")
+                .basicAuth("jrossi", "pass")
+                .asString();
+    }
+
+    private String createGroup() throws UnirestException {
+        HttpResponse<String> res = Unirest
+                .post("http://localhost:" + port + "/api/services/group/create?groupname=testgroup")
+                .basicAuth("jrossi", "pass")
+                .asString();
+        return res.getBody();
+    }
+
+
 
     @After
     public void exit() {
-        System.out.println("fuck");
         stop();
         port = nextPort;
         System.gc();
