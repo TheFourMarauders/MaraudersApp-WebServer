@@ -37,4 +37,30 @@ public class LocationSchema {
     public String getTime() {
         return time;
     }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof LocationSchema)) return false;
+
+        LocationSchema that = (LocationSchema) o;
+
+        if (Double.compare(that.getLatitude(), getLatitude()) != 0) return false;
+        if (Double.compare(that.getLongitude(), getLongitude()) != 0) return false;
+        return getTime().equals(that.getTime());
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result;
+        long temp;
+        temp = Double.doubleToLongBits(getLatitude());
+        result = (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(getLongitude());
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        result = 31 * result + getTime().hashCode();
+        return result;
+    }
 }

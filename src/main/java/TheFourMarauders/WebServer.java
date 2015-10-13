@@ -189,7 +189,7 @@ public class WebServer
         // [{lat, long, time}]
 
         // /api/services/user/:username/location?start=10:01:00+01010&end=100101001
-        get("/api/services/user/:username/location", (req, res) -> {
+        get("/api/services/user/:username/locations", (req, res) -> {
             String user = req.params(":username");
             String authtoken = req.headers("Authorization");
             String startParam = req.queryParams("start");
@@ -222,7 +222,7 @@ public class WebServer
 
 
         //  [{lat, long, time}]
-        put("/api/services/user/:username/location", (req, res) -> {
+        put("/api/services/user/:username/locations", (req, res) -> {
             String response = "";
             try {
                 String user = req.params(":username");
