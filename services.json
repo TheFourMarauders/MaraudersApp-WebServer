@@ -6,12 +6,12 @@
     },
 
     "storage":{
-        "type":"mem",
+        "type":"mongo",
         "urls":["localhost"],
         "dbname":"MaraudersApp"
 
     },
 
-    "port":8080,
+    "port":27380,
     "maxthreads":1
 }
