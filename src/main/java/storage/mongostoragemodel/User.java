@@ -2,6 +2,7 @@ package storage.mongostoragemodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import controller.HTTPException;
 import storage.datatypes.LocationInfo;
 import storage.datatypes.UserInfo;
 
@@ -47,10 +48,13 @@ public class User {
         this.groupIds = new HashSet<>();
     }
 
-    public List<LocationInfo> getLocationHistory(ZonedDateTime start, ZonedDateTime end) {
-        List<LocationInfo> list = locationHistory.stream()
+    public List<LocationInfo> getLocationHistory(ZonedDateTime start, ZonedDateTime end) throws HTTPException {
+        List<LocationInfo> infos = new ArrayList<>(locationHistory.size());
+        for (Location l : locationHistory) {
+            infos.add(new LocationInfo(l));
+        }
+        List<LocationInfo> list = infos.stream()
                 .filter(l -> l.getTime().isBefore(end) && l.getTime().isAfter(start))
-                .map(l -> new LocationInfo(l))
                 .collect(Collectors.toCollection(ArrayList<LocationInfo>::new));
         Collections.sort(list);
         return list;
