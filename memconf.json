@@ -1,0 +1,17 @@
+{
+    "auth":{
+        "type":"HTTPBasic",
+        "encoding":"UTF-8",
+        "algo":"SHA-256"
+    },
+
+    "storage":{
+        "type":"mem",
+        "urls":["localhost"],
+        "dbname":"MaraudersApp"
+
+    },
+
+    "port":27380,
+    "maxthreads":1
+}
