@@ -4,7 +4,7 @@
 
     <groupId>TheFourMarauders</groupId>
     <artifactId>WebServer</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>3.0</version>
     <packaging>jar</packaging>
 
     <name>WebServer</name>
