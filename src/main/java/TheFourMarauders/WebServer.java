@@ -66,7 +66,7 @@ public class WebServer
         ServiceController serviceController = new ServiceFactory().build(config);
         //Load config
         spark.Spark.port(config.getPort());
-        //spark.Spark.threadPool(config.getMaxThreads());
+        spark.Spark.threadPool(config.getMaxThreads());
 
         //Authentication it is done through before
         before("/api/services/*", (req, res) -> {
