@@ -13,20 +13,20 @@ public class Location implements Comparable<Location> {
 
     private double latitude;
     private double longitude;
-    private ZonedDateTime time;
+    private String time;
 
     @JsonCreator
     public Location(
             @JsonProperty("latitude") double latitude,
             @JsonProperty("longitude") double longitude,
-            @JsonProperty("time") ZonedDateTime time) {
+            @JsonProperty("time") String time) {
         this.latitude = latitude;
         this.longitude = longitude;
         this.time = time;
     }
 
     public Location(LocationInfo l) {
-        this(l.getLatitude(), l.getLongitude(), l.getTime());
+        this(l.getLatitude(), l.getLongitude(), l.getTime().toString());
     }
 
     public double getLatitude() {
@@ -37,7 +37,7 @@ public class Location implements Comparable<Location> {
         return longitude;
     }
 
-    public ZonedDateTime getTime() {
+    public String getTime() {
         return time;
     }
     @Override

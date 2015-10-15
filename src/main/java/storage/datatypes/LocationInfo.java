@@ -1,6 +1,8 @@
 package storage.datatypes;
 
+import controller.HTTPException;
 import storage.mongostoragemodel.Location;
+import util.TimeStamp;
 
 import java.time.ZonedDateTime;
 
@@ -19,8 +21,8 @@ public class LocationInfo implements Comparable<LocationInfo> {
         this.time = time;
     }
 
-    public LocationInfo(Location l) {
-        this(l.getLatitude(), l.getLongitude(), l.getTime());
+    public LocationInfo(Location l) throws HTTPException {
+        this(l.getLatitude(), l.getLongitude(), TimeStamp.getTimeObject(l.getTime()));
     }
 
     public double getLatitude() {
