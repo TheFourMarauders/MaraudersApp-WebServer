@@ -18,8 +18,9 @@ import java.time.ZonedDateTime;
 import java.util.*;
 
 /**
- * Created by Joe on 9/16/2015.
- */
+ * Implementation of StorageService that simply uses datastructures in memory, does not persist, use at risk
+ * @author Matt & Jojo
+ **/
 public class MemoryStorageService implements StorageService {
 
     private Map<String, User> users;
@@ -27,6 +28,10 @@ public class MemoryStorageService implements StorageService {
 
     private AuthConfig authConfig;
 
+    /**
+     * constructor that takes in an authorization config
+     * @param authConfig
+     */
     public MemoryStorageService(AuthConfig authConfig) {
         this.authConfig = authConfig;
         users = new HashMap<>();

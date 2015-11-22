@@ -8,7 +8,8 @@ import util.TimeStamp;
 import java.time.ZonedDateTime;
 
 /**
- * Created by joe on 10/2/15.
+ * Shemea representing a single location entry
+ * @author Matt and Joe
  */
 public class LocationSchema {
 

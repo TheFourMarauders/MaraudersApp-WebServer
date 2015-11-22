@@ -32,7 +32,8 @@ import java.util.stream.Collectors;
 
 
 /**
- * Created by Matthew on 9/7/2015.
+ *Implementation of storage service that uses mongjodb using the given configuration as the database config
+ * @author Matt & Jojo
  */
 public class MongoDBStorageService implements StorageService{
     private MongoClient mongoClient;
@@ -47,8 +48,7 @@ public class MongoDBStorageService implements StorageService{
     private ObjectMapper mapper;
 
     /**
-     * Constructs a MongoDBStorageService with the given configs
-     *
+     * Constructor that takes in both the db and auth config
      * @param dbConfig
      * @param authConfig
      */

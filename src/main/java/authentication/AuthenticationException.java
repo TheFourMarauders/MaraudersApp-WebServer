@@ -3,10 +3,18 @@ package authentication;
 import controller.HTTPException;
 
 /**
- * Created by Matthew on 9/9/2015.
+ * AuthenticationException is a subclass of exception that has an error code and a message
+ *
+ * @author TheFourMarauders
+ * @version 1
  */
 public class AuthenticationException extends HTTPException {
 
+    /**
+     * Constructs an authentication exception given a message and an error code
+     * @param message
+     * @param httpErrorCode
+     */
     public AuthenticationException(String message, int httpErrorCode) {
         super(message, httpErrorCode);
     }

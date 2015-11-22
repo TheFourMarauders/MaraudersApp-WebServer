@@ -4,7 +4,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Created by joe on 10/5/15.
+ * Class representing user information when sent to clients
+ * @author Matt and Joe
  */
 public class UserSchema {
     private String username, firstName, lastName;

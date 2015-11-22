@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Created by joe on 10/5/15.
+ * Schema representing a group
  */
 public class GroupSchema {
     private String _id;

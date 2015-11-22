@@ -7,10 +7,14 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
 
 /**
- * Created by Joe on 9/9/2015.
+ * TimeStam= is a utility class tht is responsible for parsing and generating different time elements
  */
 public class TimeStamp {
 
+    /**
+     * Gets the current time in UTC
+     * @return ZondedDAteTime - time/date in UTC
+     */
     public static ZonedDateTime getCurrentTimeUTC() {
         ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
         return now;

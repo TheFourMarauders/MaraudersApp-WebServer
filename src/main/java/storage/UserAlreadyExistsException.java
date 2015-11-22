@@ -1,10 +1,14 @@
 package storage;
 
 /**
- * Created by Joe on 9/11/2015.
+ * Exception representing duplicated usernames
+ * @author Matt and Joe
  */
 public class UserAlreadyExistsException extends StorageException {
 
+    /**
+     * no arg constructor
+     */
     public UserAlreadyExistsException() {
         super("Username is already in use");
     }
