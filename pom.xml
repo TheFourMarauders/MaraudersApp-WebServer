@@ -87,7 +87,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>TheFourMarauders.WebServer</mainClass>
+                            <mainClass>thefourmarauders.WebServer</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

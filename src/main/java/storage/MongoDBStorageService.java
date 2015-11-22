@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 
 /**
  *Implementation of storage service that uses mongjodb using the given configuration as the database config
- * @author Matt & Jojo
+ * @author Matt and Jojo
  */
 public class MongoDBStorageService implements StorageService{
     private MongoClient mongoClient;

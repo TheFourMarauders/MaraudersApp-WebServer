@@ -19,7 +19,7 @@ import java.util.*;
 
 /**
  * Implementation of StorageService that simply uses datastructures in memory, does not persist, use at risk
- * @author Matt & Jojo
+ * @author Matt and Jojo
  **/
 public class MemoryStorageService implements StorageService {
 

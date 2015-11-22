@@ -1,6 +1,6 @@
 package controller;
 
-import TheFourMarauders.ServerConfig;
+import thefourmarauders.ServerConfig;
 import authentication.AuthenticationService;
 import authentication.HttpBasicAuthService;
 import storage.MemoryStorageService;

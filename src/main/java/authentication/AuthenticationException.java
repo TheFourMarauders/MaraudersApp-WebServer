@@ -5,7 +5,7 @@ import controller.HTTPException;
 /**
  * AuthenticationException is a subclass of exception that has an error code and a message
  *
- * @author TheFourMarauders
+ * @author thefourmarauders
  * @version 1
  */
 public class AuthenticationException extends HTTPException {
