@@ -8,18 +8,38 @@ import storage.MongoDBStorageService;
 import storage.StorageService;
 
 /**
- * Created by Joe on 9/16/2015.
+ * Creates an instance of a ServiceController based on any combination of
+ * AuthConfig and StorageConfig, or a ServiceConfig which contains both
+ * AuthConfig and StorageConfig as well as other server params
+ *
+ * @author Joe
+ * @version 1.0
  */
 public class ServiceFactory {
 
+    /**
+     *
+     * @return  ServiceController with default configs
+     */
     public ServiceController build() {
         return build(new AuthConfig(), new StorageConfig());
     }
 
+    /**
+     *
+     * @param dbConfig  a storage configuration
+     * @return  ServiceController with default auth config and dbConfig
+     */
     public ServiceController build(StorageConfig dbConfig) {
         return build(new AuthConfig(), dbConfig);
     }
 
+    /**
+     *
+     * @param authConfig
+     * @param dbConfig
+     * @return  ServiceController with custom authConfgi and dbConfig
+     */
     public ServiceController build(AuthConfig authConfig, StorageConfig dbConfig) {
         StorageService storageService = null;
         if (dbConfig.getType().equalsIgnoreCase("mem")) {
@@ -34,6 +54,13 @@ public class ServiceFactory {
         return sc;
     }
 
+
+    /**
+     *
+     * @param conf
+     * @return  ServiceController using the AuthConfig and StorageConfig
+     *          as defined in ServerConfig conf
+     */
     public ServiceController build(ServerConfig conf) {
         if (conf == null) {
             return build();

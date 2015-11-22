@@ -5,7 +5,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import storage.mongostoragemodel.User;
 
 /**
- * Created by Joe on 9/10/2015.
+ * An inter-service representation of a User
+ *
+ * @author Joe and Matt
+ * @version 1.0
  */
 public class UserInfo {
 

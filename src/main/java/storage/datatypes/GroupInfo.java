@@ -5,7 +5,10 @@ import storage.mongostoragemodel.Group;
 import java.util.Set;
 
 /**
- * Created by joe on 10/5/15.
+ * An inter-service representation of a Group
+ *
+ * @author Joe and Matt
+ * @version 1.0
  */
 public class GroupInfo {
 

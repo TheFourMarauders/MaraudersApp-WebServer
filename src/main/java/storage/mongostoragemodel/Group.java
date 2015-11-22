@@ -7,7 +7,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Created by joe on 10/5/15.
+ * A representation of Group corresponding to a storage schema
+ *
+ * @author Joe and Matt
+ * @version 1.0
  */
 public class Group {
     private String _id;

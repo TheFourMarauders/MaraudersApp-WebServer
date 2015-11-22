@@ -355,6 +355,7 @@ public class WebServer
                     }
                     locationResMap.put(uid, locSchemas);
                 }
+
                 locations = mapper.writeValueAsString(locationResMap);
             } catch (HTTPException e) {
                 halt(e.getHttpErrorCode(), e.getMessage());

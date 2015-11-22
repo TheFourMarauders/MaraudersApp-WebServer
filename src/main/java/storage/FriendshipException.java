@@ -3,7 +3,7 @@ package storage;
 import controller.HTTPException;
 
 /**
- * Created by Joe on 9/10/2015.
+ * Thrown if two users are not friends. The HTTP error code is 400 Bad Request
  */
 public class FriendshipException extends HTTPException {
     private static final int HTTP_ERROR_CODE = 400;

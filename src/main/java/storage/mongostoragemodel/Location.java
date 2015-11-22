@@ -7,7 +7,7 @@ import storage.datatypes.LocationInfo;
 import java.time.ZonedDateTime;
 
 /**
- * Created by Joe on 9/7/2015.
+ * A representation of a Location corresponding to a storage schema
  */
 public class Location implements Comparable<Location> {
 

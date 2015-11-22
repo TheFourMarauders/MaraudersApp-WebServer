@@ -9,7 +9,11 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Created by Matthew on 9/7/2015.
+ * Defines a configuration for a storage service, including any urls,
+ * storage name, and type
+ *
+ * @author Matt and Joe
+ * @version 1.0
  */
 public class StorageConfig {
     public static final List<String> DEFAULT_URLS = Arrays.asList(new String[]{"localhost"});
@@ -22,10 +26,19 @@ public class StorageConfig {
 
     private StorageType storageType;
 
+    /**
+     * Construct with default values
+     */
     public StorageConfig(){
         this(DEFAULT_TYPE, DEFAULT_DBNAME, DEFAULT_URLS);
     }
 
+    /**
+     * Construct a StorageConfig with the given properties
+     * @param type see StorageConfig.StorageType
+     * @param dbName
+     * @param urls
+     */
     @JsonCreator
     public StorageConfig(
             @JsonProperty("type") String type,
@@ -37,24 +50,53 @@ public class StorageConfig {
         this.dbName = dbName;
     }
 
+    /**
+     *
+     * @return  a type, implemented include "mem" and "mongo"
+     */
     public String getType() {
         return type;
     }
 
+    /**
+     *
+     * @return  the urls at which a component of the storage service lives
+     */
     public List<String> getURLS(){
         return urls;
     }
+
+    /**
+     *
+     * @return
+     */
     public String getDbName(){
         return dbName;
     }
 
+    /**
+     *
+     * @param s
+     */
     public void setStorageType(StorageType s) {
         storageType = s;
     }
 
+    /**
+     * Defines implemented StorageType, currently includes StorageType.MEMORY
+     * and StorageType.MONGO
+     *
+     * @author Joe
+     * @version 1.0
+     */
     public enum StorageType {
         MEMORY, MONGO;
 
+        /**
+         *
+         * @param s the name of a storage type, "mem" or "mongo"
+         * @return  a StorageType that corresponds to a given name
+         */
         public static StorageType verify(String s) {
             if (s.equalsIgnoreCase("mem")) {
                 return MEMORY;

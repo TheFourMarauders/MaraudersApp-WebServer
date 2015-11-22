@@ -7,7 +7,10 @@ import util.TimeStamp;
 import java.time.ZonedDateTime;
 
 /**
- * Created by Joe on 9/9/2015.
+ * A representation of a FriendRequest corresponding to storage schema
+ *
+ * @author Joe and Matt
+ * @version 1.0
  */
 public class FriendRequest {
     private String senderUsername;

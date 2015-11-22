@@ -46,6 +46,12 @@ public class MongoDBStorageService implements StorageService{
 
     private ObjectMapper mapper;
 
+    /**
+     * Constructs a MongoDBStorageService with the given configs
+     *
+     * @param dbConfig
+     * @param authConfig
+     */
     public MongoDBStorageService(StorageConfig dbConfig, AuthConfig authConfig){
         this.dbConfig = dbConfig;
         this.authConfig = authConfig;

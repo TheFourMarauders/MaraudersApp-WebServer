@@ -7,7 +7,10 @@ import util.TimeStamp;
 import java.time.ZonedDateTime;
 
 /**
- * Created by joe on 10/2/15
+ * An inter-service representation of a Location
+ *
+ * @author Joe and Matt
+ * @version 1.0
  */
 public class LocationInfo implements Comparable<LocationInfo> {
 
