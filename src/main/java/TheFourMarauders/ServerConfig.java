@@ -6,7 +6,8 @@ import controller.AuthConfig;
 import controller.StorageConfig;
 
 /**
- * Created by joe on 10/7/15.
+ * Class representing the server configuration for running the server
+ * @author Matt and Joe
  */
 public class ServerConfig {
     public static final int DEFAULT_PORT = 8080;
@@ -18,10 +19,21 @@ public class ServerConfig {
     private StorageConfig storageConfig;
     private AuthConfig authConfig;
 
+
+    /**
+     * No arg constructor with default values
+     */
     public ServerConfig() {
         this(new StorageConfig(), new AuthConfig(), DEFAULT_PORT, DEFAULT_THREADS);
     }
 
+    /**
+     * Constructor in which you specify all the values, also used as the constructor for json deserialization
+     * @param storageConfig - the StorageConfiguration
+     * @param authConfig - the authentication configuration
+     * @param port
+     * @param maxThreads
+     */
     @JsonCreator
     public ServerConfig(
             @JsonProperty("storage") StorageConfig storageConfig,
@@ -35,18 +47,34 @@ public class ServerConfig {
         verifyTypes();
     }
 
+    /**
+     * gets the port
+     * @return the port
+     */
     public int getPort() {
         return port;
     }
 
+    /**
+     * gets the max threads
+     * @return the max  threads
+     */
     public int getMaxThreads() {
         return maxThreads;
     }
 
+    /**
+     * gets the storage config
+     * @return the config
+     */
     public StorageConfig getStorageConfig() {
         return storageConfig;
     }
 
+    /**
+     * gets the auth config
+     * @return the auth config
+     */
     public AuthConfig getAuthConfig() {
         return authConfig;
     }
@@ -56,6 +84,10 @@ public class ServerConfig {
         authConfig.setAuthType(AuthConfig.AuthType.verify(authConfig.getType()));
     }
 
+    /**
+     * sets the port
+     * @param port
+     */
     public void setPort(int port) {
         this.port = port;
     }

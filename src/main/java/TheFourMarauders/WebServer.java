@@ -33,7 +33,7 @@ import static spark.Spark.delete;
 
 /**
  * Main Class File, Executed when starting server
- *
+ * @author Matt and Joe
  */
 public class WebServer
 {
@@ -43,6 +43,11 @@ public class WebServer
         mapper = new ObjectMapper();
         mapper.findAndRegisterModules();
     }
+
+    /**
+     * The main method for executing
+     * @param args, args[0] = filename of config file
+     */
     public static void main( String[] args ) {
         ServerConfig config = null;
         if (args.length > 0 || !args[0].isEmpty()) {

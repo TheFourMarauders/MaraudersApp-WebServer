@@ -3,6 +3,10 @@ package TheFourMarauders.requestschema;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * Class representing everything needed for creating a user
+ *  @author Matt and Joe
+ */
 public class UserCreationRequest {
     private String username;
     private String password;
