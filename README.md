@@ -33,7 +33,7 @@ The webserver uses HTTP Basic authentication.  All requests to /api/services/* m
 
 ######GET  "/api/services/user/:username/locations"
 - Retrieves the set of locations for the given "username"
-- Query Parameters (optional): start - a time*, end - a time*
+- Query Parameters (optional): start - a time\*, end - a time\*
 - Response: Code 200, Body: Json list of objects with fields (latitude, longitude, time*)
 
 ######PUT - "/api/services/user/:username/locations"
