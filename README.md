@@ -28,14 +28,23 @@ The webserver uses HTTP Basic authentication.  All requests to /api/services/* m
 - Response: Code 200
 
 ######GET  "/api/services/user/:username/friends"
-- Retrieves the friend list for the given "user"
+- Retrieves the friend list for the given "username"
 - Response: Code 200, JSON list of objects with fields (username, firstName, lastName)
 
 ######GET  "/api/services/user/:username/locations"
+- Retrieves the set of locations for the given "username"
+- Query Parameters (optional): start - a time*, end - a time*
+- Response: Code 200, Body: Json list of objects with fields (latitude, longitude, time*)
 
 ######PUT - "/api/services/user/:username/locations"
+- Puts a list of locations into your location history
+- Body: json list of objects with fields (latitude, longitude, and time*)
+- Response: Code 200 if sucess, Code 400 if bad request json
 
 ######POST "api/services/group/create"
+- Creates a group with the given name
+- Query parameter (mandatory): groupname - the naem of the group
+- Response: Code 200, Body - GUID corresponding to new group
 
 ######GET "api/services/user/:username/groups"
 
@@ -46,3 +55,6 @@ The webserver uses HTTP Basic authentication.  All requests to /api/services/* m
 ######DELETE "api/services/group/:id/user/:username"
 
 ######GET  "api/services/group/:id/locations"
+
+
+*all times in ISO 8061 format
