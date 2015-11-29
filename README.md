@@ -47,14 +47,24 @@ The webserver uses HTTP Basic authentication.  All requests to /api/services/* m
 - Response: Code 200, Body - GUID corresponding to new group
 
 ######GET "api/services/user/:username/groups"
+- gets a list of group info for groups that "username" is a member of
+- Response: Code 200, Body - json array of group infos
 
 ######GET  "api/services/group/:id"
+- get a single group info
+- Response: Code 200, Body - json with groupname and usernames of members
 
-######GET "api/services/group/:id/user/:username"
+######PUT "api/services/group/:id/user/:username"
+- adds user "username" to group with id "id" (*note: id is not the groupname*)
+- Response: Code 200 if success
 
 ######DELETE "api/services/group/:id/user/:username"
+- removes user "username" from group with id "id"
+- Response: Code 200 if success
 
 ######GET  "api/services/group/:id/locations"
-
+- get the locations of all friendly group members in "id"
+- Query Parameters (optional): start - a time\*, end - a time\*
+- Response: Code 200, Body - json array with all user locations between start and end time, organized by user
 
 *all times in ISO 8061 format
