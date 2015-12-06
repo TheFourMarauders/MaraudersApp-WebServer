@@ -2,7 +2,7 @@
 
 ##Dependencies
 ###Minimum versions
-- jdk 1.8.0_60 (at least)
+- jdk 1.8.0_60
 - apache maven 3.3.9
 
 ###Recommended for Deployment
