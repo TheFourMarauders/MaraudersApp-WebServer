@@ -1,5 +1,12 @@
 #MaraudersMap-WebServer
 
+##Dependencies
+###Minimum versions
+- jdk 1.8.0_60 (at least)
+- apache maven 3.3.9
+###Recommended for Deployment
+- mongodb 3.0.7
+
 ##Authentication
 The webserver uses HTTP Basic authentication.  All requests to /api/services/* must have authentication. Methods along these routes will return either a 403 or 404 error code depending on the type of authorization failure.
 
