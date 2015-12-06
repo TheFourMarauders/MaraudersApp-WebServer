@@ -4,6 +4,7 @@
 ###Minimum versions
 - jdk 1.8.0_60 (at least)
 - apache maven 3.3.9
+
 ###Recommended for Deployment
 - mongodb 3.0.7
 
