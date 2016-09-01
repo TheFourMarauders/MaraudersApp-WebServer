@@ -47,7 +47,7 @@ The webserver uses HTTP Basic authentication.  All requests to /api/services/* m
 ######PUT - "/api/services/user/:username/locations"
 - Puts a list of locations into your location history
 - Body: json list of objects with fields (latitude, longitude, and time*)
-- Response: Code 200 if sucess, Code 400 if bad request json
+- Response: Code 200 if success, Code 400 if bad request json
 
 ######POST "api/services/group/create"
 - Creates a group with the given name
